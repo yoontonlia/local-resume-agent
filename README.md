@@ -72,7 +72,7 @@
 **1. 下载代码**
 
 ```bash
-git clone https://github.com/你的用户名/local-resume-agent.git
+git clone https://github.com/yoontonlia/local-resume-agent.git
 cd local-resume-agent
 ```
 
