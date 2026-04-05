@@ -1,0 +1,26 @@
+{
+  "name": "local-resume-agent",
+  "version": "1.0.0",
+  "description": "基于Chrome本地AI的简历分析工具，所有数据在本地处理，保护隐私",
+  "main": "popup.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "chrome-extension",
+    "resume-analyzer",
+    "ai",
+    "privacy",
+    "job-hunting"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/local-resume-agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/local-resume-agent/issues"
+  },
+  "homepage": "https://github.com/yourusername/local-resume-agent#readme"
+}

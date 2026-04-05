@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>简历智能分析助手 - 弹窗版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 520px;
+            min-height: 620px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #f0f3fa;
+        }
+        
+        /* 主容器 */
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            margin: 12px;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 头部区域 - 更高对比 */
+        .header {
+            background: linear-gradient(135deg, rgba(98, 78, 210, 0.95) 0%, rgba(108, 92, 231, 0.95) 100%);
+            padding: 20px 20px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #e0d4ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.2px;
+        }
+        
+        /* 按钮组 - 清晰易点 */
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+        
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.38);
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .icon-btn:active {
+            transform: translateY(0px);
+        }
+        
+        /* 状态栏 */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 245, 0.9);
+            margin-top: 4px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #ffc107;
+            transition: all 0.3s;
+            box-shadow: 0 0 2px #ffc107;
+        }
+        
+        .status-dot.ready {
+            background-color: #4caf50;
+            box-shadow: 0 0 8px #4caf50;
+        }
+        
+        /* 内容区域 */
+        .content {
+            padding: 20px;
+        }
+        
+        /* 上传区域 - 增强虚线边框 */
+        .upload-area {
+            background: rgba(25, 20, 48, 0.7);
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+            border: 2px dashed rgba(167, 139, 250, 0.7);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-bottom: 20px;
+            backdrop-filter: blur(8px);
+        }
+        
+        .upload-area:hover {
+            border-color: #a78bfa;
+            background: rgba(108, 92, 231, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .upload-icon {
+            font-size: 44px;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .upload-text {
+            color: #f0ecff;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .file-info {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #a7f3d0;
+            font-weight: 500;
+            display: none;
+        }
+        
+        /* 分隔线 */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 16px 0;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.25);
+        }
+        .divider-text {
+            padding: 0 12px;
+        }
+        
+        /* 手动输入区域 */
+        .manual-area {
+            margin-bottom: 18px;
+        }
+        
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        .manual-textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(15, 12, 32, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 20px;
+            font-size: 12px;
+            font-family: 'SF Mono', monospace;
+            resize: vertical;
+            color: #ffffff;
+            transition: all 0.2s;
+        }
+        
+        .manual-textarea:focus {
+            outline: none;
+            border-color: #a78bfa;
+            background: rgba(30, 25, 60, 0.98);
+            box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.3);
+        }
+        
+        .manual-textarea::placeholder {
+            color: #bcb2ff;
+        }
+        
+        .char-count {
+            font-size: 11px;
+            font-weight: 450;
+            color: #bcb2ff;
+            margin-top: 6px;
+            text-align: right;
+        }
+        
+        /* 选项卡片 */
+        .options-card {
+            background: rgba(25, 20, 48, 0.7);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .option-item {
+            margin-bottom: 0;
+        }
+        
+        .option-item label {
+            font-size: 14px;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(15, 12, 32, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 450;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #a78bfa;
+        }
+        
+        select option {
+            background: #1e1a38;
+            color: #f2eeff;
+        }
+        
+        /* 主要按钮 */
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6c5ce7 0%, #8e44ad 100%);
+            border: none;
+            border-radius: 48px;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.3px;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(108, 92, 231, 0.5);
+            filter: brightness(1.02);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+        
+        /* 思考状态 */
+        .thinking {
+            background: rgba(108, 92, 231, 0.28);
+            border-radius: 20px;
+            padding: 14px 18px;
+            margin-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #e2dcff;
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+        }
+        
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #cbb2ff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 结果区域 */
+        .result-area {
+            background: rgba(20, 18, 45, 0.88);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 18px;
+            margin-top: 18px;
+            max-height: 380px;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.65;
+            display: none;
+            color: #f3efff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+        }
+        
+        .result-area strong, .result-area b {
+            color: #ffd966;
+        }
+        
+        .result-area ul, .result-area ol {
+            margin-left: 1.3rem;
+        }
+        
+        /* 导出按钮组 */
+        .export-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            padding: 10px;
+            background: rgba(59, 130, 246, 0.9);
+            border: none;
+            border-radius: 48px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .btn-secondary:hover {
+            background: #3b82f6;
+            transform: translateY(-1px);
+        }
+        
+        /* 职位匹配模块 */
+        .match-section {
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .match-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        
+        .match-textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(15, 12, 32, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 20px;
+            font-size: 12px;
+            font-family: monospace;
+            resize: vertical;
+            color: white;
+            margin-bottom: 14px;
+        }
+        
+        .match-textarea:focus {
+            outline: none;
+            border-color: #a78bfa;
+        }
+        
+        .extract-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(108, 117, 125, 0.9);
+            border: none;
+            border-radius: 48px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 14px;
+            transition: all 0.2s;
+        }
+        
+        .extract-btn:hover {
+            background: #6c757d;
+            transform: translateY(-1px);
+        }
+        
+        .match-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 48px;
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .match-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(245, 87, 108, 0.5);
+        }
+        
+        .match-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+        
+        .match-status {
+            font-size: 11px;
+            font-weight: 500;
+            color: #cbc3ff;
+            margin-top: 8px;
+            text-align: center;
+        }
+        
+        /* 底部 */
+        .footer {
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.35);
+            text-align: center;
+            font-size: 10px;
+            font-weight: 500;
+            color: #bfb9f0;
+        }
+        
+        /* 滚动条 */
+        .result-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .result-area::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+        
+        .result-area::-webkit-scrollbar-thumb {
+            background: #a78bfa;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="header-top">
+            <h2>🤖 简历智能分析助手</h2>
+            <div class="btn-group">
+                <button id="settingsBtn" class="icon-btn">⚙️ 设置</button>
+                <button id="dashboardBtn" class="icon-btn">📊 看板</button>
+                <button id="jobMatchBtn" class="icon-btn">🎯 匹配</button>
+                <button id="optimizeBtn" class="icon-btn">✏️ 优化</button>
+                <button id="compareBtn" class="icon-btn">🔍 对比</button>
+                <button id="batchBtn" class="icon-btn">📚 批量</button>
+                <button id="historyBtn" class="icon-btn">📜 历史</button>
+                <button id="templatesBtn" class="icon-btn">📋 模板</button>
+            </div>
+        </div>
+        <div class="status-bar">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">正在初始化AI模型...</span>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- 文件上传区域 -->
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">点击或拖拽上传 PDF 简历</div>
+            <div class="file-info" id="fileInfo" style="display:none;"></div>
+        </div>
+        
+        <!-- 分隔线 -->
+        <div class="divider">
+            <div class="divider-line"></div>
+            <div class="divider-text">或</div>
+            <div class="divider-line"></div>
+        </div>
+        
+        <!-- 手动输入区域 -->
+        <div class="manual-area">
+            <div class="section-label">📝 手动粘贴简历内容</div>
+            <textarea id="manualResumeText" class="manual-textarea" rows="5" 
+                placeholder="粘贴简历文本到这里...&#10;&#10;示例：&#10;姓名：张三&#10;工作经历：5年前端开发经验，熟练使用React、Vue、TypeScript&#10;教育背景：计算机科学与技术 本科"></textarea>
+            <div class="char-count" id="manualCharCount">0 字符 (至少需要20字符)</div>
+        </div>
+        
+        <!-- 分析选项卡片 -->
+        <div class="options-card">
+            <div class="option-item">
+                <label>📋 分析模板</label>
+                <select id="templateSelect">
+                    <option value="">加载中...</option>
+                </select>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px;">
+                        💡 可在"模板管理"中自定义分析模板
+                </div>
+            </div>
+        </div>
+            
+        
+        <!-- 开始分析按钮 -->
+        <button class="btn-primary" id="analyzeBtn" disabled>✨ 开始分析简历</button>
+        
+        <!-- 思考状态 -->
+        <div class="thinking" id="thinking">
+            <div class="spinner"></div>
+            <span>🤖 AI 正在深度分析，请稍候...</span>
+        </div>
+        
+        <!-- 结果展示区域 -->
+        <div class="result-area" id="resultArea"></div>
+        
+        <!-- 导出按钮区域 -->
+        <div id="exportButtons" style="display: none;" class="export-buttons">
+            <button id="exportMdBtn" class="btn-secondary" style="background: #10b981;">📝 导出 Markdown</button>
+            <button id="exportTxtBtn" class="btn-secondary" style="background: #3b82f6;">📄 导出 TXT</button>
+        </div>
+        
+        <!-- 职位匹配面板 -->
+        <div class="match-section">
+            <div class="match-title">
+                <span>🎯</span>
+                <span>职位匹配分析</span>
+                <span style="font-size: 11px; font-weight: normal; color: #bcb2ff;">粘贴JD或从网页提取</span>
+            </div>
+            
+            <button id="extractFromWebBtn" class="extract-btn">
+                🌐 从当前网页提取招聘信息
+            </button>
+            <div style="font-size: 11px; color: #c4bcff; margin: -8px 0 12px 0; text-align: center;">
+                支持 LinkedIn、Boss直聘、拉勾、智联、前程无忧
+            </div>
+            
+            <textarea id="jobDescription" class="match-textarea" rows="4" 
+                placeholder="粘贴职位描述（JD）到这里..."></textarea>
+            
+            <button id="matchBtn" class="match-btn" disabled>🔍 分析岗位匹配度</button>
+            <div id="matchStatus" class="match-status"></div>
+            
+            <div id="matchResultArea" class="result-area" style="margin-top: 14px; display: none;"></div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        🔒 所有数据在本地处理，不上传任何服务器
+    </div>
+</div>
+
+<!-- 核心库：AI服务和LLM服务必须优先 -->
+<script src="lib/llm-service.js"></script>
+<script src="lib/ai-core.js"></script>
+<script src="lib/template-manager.js"></script>
+<script src="lib/skill-loader.js"></script>
+
+<!-- 其他功能模块 -->
+<script src="lib/pdf.min.js"></script>
+<script src="lib/pdf-reader.js"></script>
+<script src="lib/web-extractor.js"></script>
+<script src="lib/report-exporter.js"></script>
+<script src="lib/history-manager.js"></script>
+<script src="lib/batch-analyzer.js"></script>
+<script src="lib/report-comparer.js"></script>
+<script src="lib/resume-optimizer.js"></script>
+<script src="lib/job-matcher-enhanced.js"></script>
+
+<!-- 技能模块 -->
+<script src="skills/resume-analyzer.js"></script>
+<script src="skills/job-matcher.js"></script>
+
+<!-- 主逻辑 -->
+<script src="popup.js"></script>
+
+<!-- 补充内联增强确保样式完美适配 -->
+<script>
+    (function() {
+        // 增强下拉框选项可见
+        const styleAdd = document.createElement('style');
+        styleAdd.textContent = `
+            select option {
+                background: #1e1a38 !important;
+                color: #f0ecff !important;
+                padding: 8px;
+            }
+            .result-area p, .result-area li {
+                color: #f3efff;
+            }
+            .btn-primary:active, .match-btn:active, .extract-btn:active {
+                transform: scale(0.97);
+            }
+            .manual-textarea, .match-textarea {
+                caret-color: #c084fc;
+            }
+        `;
+        document.head.appendChild(styleAdd);
+        
+        // 动态监控字符统计与按钮状态 (确保popup.js基础上视觉辅助)
+        const manualInput = document.getElementById('manualResumeText');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const charCountSpan = document.getElementById('manualCharCount');
+        
+        function updateCharAndButton() {
+            if (manualInput && charCountSpan) {
+                const len = manualInput.value.length;
+                charCountSpan.innerText = `${len} 字符 ${len < 20 ? '(至少需要20字符)' : '✓ 可分析'}`;
+                if (len >= 20 && analyzeBtn && analyzeBtn.disabled) {
+                    // 仅用于辅助提示，主逻辑popup.js会控制enable
+                }
+            }
+        }
+        if (manualInput) {
+            manualInput.addEventListener('input', updateCharAndButton);
+            updateCharAndButton();
+        }
+        
+        // 状态点初始化
+        const statusDot = document.getElementById('statusDot');
+        if (statusDot) {
+            setTimeout(() => {
+                if (window.aiCore && window.aiCore.isReady) {
+                    statusDot.classList.add('ready');
+                    document.getElementById('statusText').innerText = 'AI模型已就绪';
+                } else {
+                    statusDot.classList.remove('ready');
+                    document.getElementById('statusText').innerText = '等待API配置';
+                }
+            }, 500);
+        }
+    })();
+</script>
+</body>
+</html>

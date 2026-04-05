@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>岗位匹配分析 - AI智能匹配引擎</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #f0f3fa;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 24px;
+        }
+        
+        /* 头部 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h2 {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ffffff 0%, #e0d6ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.3px;
+        }
+        
+        .btn-back {
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 8px 22px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+        
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.32);
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* 卡片样式 - 增强对比度 */
+        .selection-area, .card {
+            background: rgba(25, 20, 48, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 28px;
+            margin-bottom: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+        }
+        
+        .section-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.2px;
+            border-left: 4px solid #c084fc;
+            padding-left: 14px;
+        }
+        
+        /* 表单元素 - 高可读性 */
+        select, input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(15, 12, 32, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 18px;
+            font-size: 14px;
+            color: #ffffff;
+            transition: all 0.2s;
+            font-family: inherit;
+            font-weight: 450;
+        }
+        
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #a78bfa;
+            background: rgba(30, 25, 55, 0.98);
+            box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.3);
+        }
+        
+        select option {
+            background: #1e1a38;
+            color: #f2eeff;
+            padding: 10px;
+        }
+        
+        textarea {
+            resize: vertical;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            line-height: 1.5;
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: #b9b2f0;
+            opacity: 0.8;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #f0efff;
+        }
+        
+        /* 提取按钮样式 */
+        .extract-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(59, 130, 246, 0.85);
+            border: none;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 14px;
+            backdrop-filter: blur(2px);
+            letter-spacing: 0.3px;
+        }
+        
+        .extract-btn:hover {
+            background: #3b82f6;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px #3b82f660;
+        }
+        
+        /* 主要按钮优化 */
+        .btn-primary, .match-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 48px;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .match-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(245, 87, 108, 0.5);
+            filter: brightness(1.02);
+        }
+        
+        .match-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            width: 100%;
+            padding: 12px;
+            background: rgba(108, 117, 125, 0.85);
+            border: none;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+        
+        .btn-secondary:hover {
+            background: #6c757d;
+            transform: translateY(-1px);
+        }
+        
+        /* 思考中状态 */
+        .thinking {
+            background: rgba(108, 92, 231, 0.3);
+            border-radius: 24px;
+            padding: 18px 24px;
+            margin: 24px 0;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 15px;
+            color: #e2dcff;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+        }
+        
+        .spinner {
+            width: 22px;
+            height: 22px;
+            border: 2.5px solid #cbb2ff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 结果区域 */
+        .result-area {
+            background: rgba(20, 18, 45, 0.88);
+            backdrop-filter: blur(12px);
+            border-radius: 26px;
+            padding: 24px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            display: none;
+            transition: all 0.2s;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            gap: 12px;
+        }
+        
+        .result-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        
+        .score-badge {
+            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 5px 18px;
+            border-radius: 60px;
+            font-size: 15px;
+            font-weight: 800;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            letter-spacing: 0.5px;
+        }
+        
+        .result-time {
+            font-size: 12px;
+            color: #cbc3ff;
+            font-weight: 450;
+        }
+        
+        .result-content {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #f3efff;
+            white-space: pre-wrap;
+            max-height: 460px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+        
+        /* 导出按钮 */
+        .export-buttons {
+            display: flex;
+            gap: 14px;
+            margin-top: 24px;
+        }
+        
+        .btn-export {
+            flex: 1;
+            padding: 10px 12px;
+            background: rgba(52, 152, 219, 0.85);
+            border: none;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .btn-export:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+        
+        /* 历史记录区域 */
+        .history-list {
+            margin-top: 28px;
+            background: rgba(25, 20, 48, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: none;
+        }
+        
+        .history-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #f0e9ff;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.2px;
+        }
+        
+        .history-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateX(4px);
+            border-color: rgba(167, 139, 250, 0.5);
+        }
+        
+        .history-files {
+            font-size: 14px;
+            font-weight: 500;
+            color: #f0ebff;
+        }
+        
+        .history-time {
+            font-size: 11px;
+            color: #bcb2ff;
+            margin-top: 6px;
+        }
+        
+        /* 滚动条美化 */
+        .result-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .result-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+        
+        .result-content::-webkit-scrollbar-thumb {
+            background: #a78bfa;
+            border-radius: 10px;
+        }
+        
+        /* 内嵌提示增强 */
+        .empty-state, .note-text {
+            color: #cfc9ff;
+        }
+        
+        /* 针对下拉选择框可见 */
+        .report-select {
+            color: white;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>🎯 岗位匹配分析 · 精准评估</h2>
+        <button class="btn-back" id="backBtn">← 返回看板</button>
+    </div>
+    
+    <div class="content">
+        <div class="selection-area">
+            <div class="section-title">📄 选择已解析的简历</div>
+            <select id="reportSelect" class="report-select" style="color:#ffffff; background: #15122e;">
+                <option value="" style="background:#2a234a; color:#cdc9ff;">-- 请选择一份已分析的简历 --</option>
+            </select>
+            
+            <div class="section-title" style="margin-top: 24px;">🔗 职位链接（可选）</div>
+            <input type="text" id="jobUrl" class="job-url" placeholder="例如：https://www.linkedin.com/jobs/xxx 或 企业招聘官网链接" style="color:white;">
+            
+            <div class="section-title" style="margin-top: 24px;">📋 职位描述 (JD)</div>
+            <button class="extract-btn" id="extractFromWebBtn">🌐 从当前网页智能提取</button>
+            <textarea id="jobDescription" class="job-description" rows="6" 
+                placeholder="粘贴职位描述（JD）到这里，支持中英文...&#10;&#10;或点击上方按钮，自动从当前浏览器Tab页提取招聘描述"></textarea>
+            
+            <button class="match-btn" id="matchBtn" disabled>✨ 开始深度匹配分析</button>
+        </div>
+        
+        <div class="thinking" id="thinking">
+            <div class="spinner"></div>
+            <span>🤖 AI 正在比对简历与岗位要求，生成多维匹配报告...</span>
+        </div>
+        
+        <div class="result-area" id="resultArea">
+            <div class="result-header">
+                <span class="result-title">📊 匹配分析报告</span>
+                <span class="result-time" id="resultTime"></span>
+                <span class="score-badge" id="scoreBadge">--%</span>
+            </div>
+            <div class="result-content" id="resultContent"></div>
+            <div class="export-buttons" id="exportButtons" style="display: none;">
+                <button class="btn-export" id="exportMdBtn">📝 导出 Markdown</button>
+                <button class="btn-export" id="exportTxtBtn">📄 导出 TXT</button>
+            </div>
+        </div>
+        
+        <div class="history-list" id="historyList" style="display: none;">
+            <div class="history-title">📜 近期匹配记录</div>
+            <div id="historyItems"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 核心库按顺序加载（保留原功能） -->
+<script src="lib/llm-service.js"></script>
+<script src="lib/ai-core.js"></script>
+<script src="lib/pdf-reader.js"></script>
+<script src="lib/web-extractor.js"></script>
+<script src="lib/job-matcher-enhanced.js"></script>
+<script src="skills/job-matcher.js"></script>
+<script src="job-match.js"></script>
+
+<!-- 附加增强脚本：保证所有文本颜色对比度极佳，并修复占位符可读性 -->
+<script>
+    (function() {
+        // 增强样式，保证动态生成内容视觉清晰
+        const stylePatch = document.createElement('style');
+        stylePatch.textContent = `
+            .score-badge, .match-btn, .extract-btn {
+                text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+            }
+            .result-content strong, .result-content b {
+                color: #ffd966;
+            }
+            .result-content ul, .result-content ol {
+                margin-left: 1.3rem;
+            }
+            select option:checked, select option:hover {
+                background: #5b4b9a !important;
+                color: white;
+            }
+            .job-description, .job-url, .report-select {
+                font-weight: 450;
+            }
+            .history-item .history-files {
+                letter-spacing: 0.2px;
+            }
+            .section-title::before {
+                content: "▌";
+                color: #c084fc;
+                font-weight: bold;
+                margin-right: 6px;
+            }
+            .match-btn:active {
+                transform: scale(0.98);
+            }
+        `;
+        document.head.appendChild(stylePatch);
+        
+        // 等待DOM加载完成，尝试启用下拉菜单已有数据同步（兼容现有加载逻辑）
+        window.addEventListener('DOMContentLoaded', function() {
+            const selectEl = document.getElementById('reportSelect');
+            if (selectEl && selectEl.options.length <= 1) {
+                // 如果现有逻辑支持 refreshResumeList 则触发
+                if (typeof window.loadResumeList === 'function') {
+                    setTimeout(() => window.loadResumeList(), 80);
+                } else if (typeof window.refreshResumeSelect === 'function') {
+                    setTimeout(() => window.refreshResumeSelect(), 80);
+                } else {
+                    // 给用户视觉提示
+                    const emptyOption = document.createElement('option');
+                    emptyOption.text = '-- 暂无简历，请先分析简历 --';
+                    emptyOption.disabled = true;
+                    if(selectEl) selectEl.appendChild(emptyOption);
+                }
+            }
+            // 提高文本框默认对比
+            const textarea = document.querySelector('#jobDescription');
+            if(textarea) {
+                textarea.style.backgroundColor = 'rgba(15, 12, 32, 0.95)';
+            }
+        });
+        
+        // 监控匹配按钮状态，确保禁用时仍然有提示
+        const matchBtn = document.getElementById('matchBtn');
+        if (matchBtn) {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'disabled') {
+                        if (matchBtn.disabled) {
+                            matchBtn.style.opacity = '0.65';
+                            matchBtn.style.cursor = 'not-allowed';
+                        } else {
+                            matchBtn.style.opacity = '1';
+                            matchBtn.style.cursor = 'pointer';
+                        }
+                    }
+                });
+            });
+            observer.observe(matchBtn, { attributes: true });
+        }
+    })();
+</script>
+</body>
+</html>

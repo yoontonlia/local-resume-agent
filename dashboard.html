@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>数据看板 - 简历智能分析中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #f0f3fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 24px;
+        }
+        
+        /* 头部 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h2 {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ffffff 0%, #e0d6ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.3px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn-back, .btn-danger {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+        
+        .btn-danger {
+            background: rgba(244, 67, 54, 0.85);
+            border-color: rgba(255, 100, 100, 0.4);
+        }
+        
+        .btn-danger:hover {
+            background: rgba(244, 67, 54, 1);
+            transform: translateY(-1px);
+            border-color: rgba(255, 160, 160, 0.8);
+        }
+        
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* 统计卡片网格 - 增强对比度 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: rgba(25, 20, 48, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 24px 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.35);
+        }
+        
+        .stat-icon {
+            font-size: 34px;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .stat-number {
+            font-size: 38px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #d9cdff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(245, 240, 255, 0.85);
+            margin-top: 8px;
+            letter-spacing: 0.3px;
+        }
+        
+        /* 所有卡片区块通用样式 */
+        .chart-section {
+            background: rgba(25, 20, 48, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 26px;
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.2px;
+            border-left: 4px solid #b794f4;
+            padding-left: 14px;
+        }
+        
+        /* 技能标签 - 清晰艳丽 */
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        
+        .skill-tag {
+            background: linear-gradient(135deg, #5f4bd6, #8b5cf6);
+            padding: 8px 20px;
+            border-radius: 48px;
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .skill-count {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        /* 周活跃度 / 柱状图 */
+        .week-bars, .month-bars {
+            display: flex;
+            gap: 18px;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        
+        .week-item, .month-item {
+            flex: 1;
+            text-align: center;
+            min-width: 55px;
+        }
+        
+        .week-bar, .month-bar {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            height: 110px;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        }
+        
+        .week-fill {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            transition: height 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border-radius: 20px;
+            box-shadow: 0 -1px 4px rgba(0,0,0,0.2);
+        }
+        
+        .month-fill {
+            background: linear-gradient(135deg, #f472b6, #db2777);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            transition: height 0.5s ease;
+            border-radius: 20px;
+        }
+        
+        .week-label, .month-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2dcff;
+            margin-top: 6px;
+        }
+        
+        .week-value, .month-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #fef9c3;
+            margin-top: 4px;
+        }
+        
+        /* 匹配度分布 圆环风格 */
+        .score-distribution {
+            display: flex;
+            gap: 28px;
+            justify-content: space-evenly;
+            flex-wrap: wrap;
+        }
+        
+        .score-item {
+            text-align: center;
+            background: rgba(10, 8, 25, 0.5);
+            padding: 16px 12px;
+            border-radius: 32px;
+            min-width: 100px;
+            backdrop-filter: blur(4px);
+        }
+        
+        .score-circle {
+            width: 88px;
+            height: 88px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255,255,240,0.4);
+        }
+        
+        .score-excellent { background: #10b981; box-shadow: 0 4px 12px #10b98180; }
+        .score-good { background: #3b82f6; box-shadow: 0 4px 12px #3b82f680; }
+        .score-average { background: #f59e0b; box-shadow: 0 4px 12px #f59e0b80; }
+        .score-poor { background: #ef4444; box-shadow: 0 4px 12px #ef444480; }
+        
+        .score-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f0efff;
+            letter-spacing: 0.3px;
+        }
+        
+        .score-count {
+            font-size: 15px;
+            font-weight: 700;
+            margin-top: 6px;
+            color: #ffecb3;
+        }
+        
+        /* 最近活动列表 */
+        .recent-list {
+            margin-top: 8px;
+        }
+        
+        .recent-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            gap: 16px;
+            transition: background 0.15s;
+            border-radius: 16px;
+        }
+        
+        .recent-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+        
+        .recent-type {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 5px 16px;
+            border-radius: 40px;
+            min-width: 88px;
+            text-align: center;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(2px);
+        }
+        
+        .type-analysis { background: #1e40af; color: white; box-shadow: 0 1px 3px #00000030; }
+        .type-match { background: #15803d; color: white; }
+        .type-optimize { background: #c2410c; color: white; }
+        
+        .recent-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+            color: #f4f2ff;
+        }
+        
+        .recent-time {
+            font-size: 12px;
+            color: #bfb9ff;
+            font-weight: 450;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #cfc9ff;
+            font-size: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 32px;
+            backdrop-filter: blur(4px);
+        }
+        
+        .footer-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 18px;
+            margin-top: 16px;
+        }
+        
+        .btn-refresh {
+            background: rgba(59, 130, 246, 0.9);
+            border: none;
+            color: white;
+            padding: 10px 28px;
+            border-radius: 48px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .btn-refresh:hover {
+            background: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px #3b82f640;
+        }
+        
+        /* 滚动条整体优化 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8b5cf6;
+            border-radius: 10px;
+        }
+        
+        /* 增强文字响应 */
+        @media (max-width: 760px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 14px;
+            }
+            .chart-section {
+                padding: 18px;
+            }
+            .section-title {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>📊 数据看板 · 智能洞察</h2>
+        <div class="header-actions">
+            <button class="btn-danger" id="clearDataBtn">🗑️ 清除所有数据</button>
+            <button class="btn-back" id="backBtn">← 返回首页</button>
+        </div>
+    </div>
+    
+    <div class="content">
+        <!-- 统计卡片 高对比数字 -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon">📄</div>
+                <div class="stat-number" id="totalAnalyses">0</div>
+                <div class="stat-label">简历分析次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-number" id="totalMatches">0</div>
+                <div class="stat-label">岗位匹配记录</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✏️</div>
+                <div class="stat-number" id="totalOptimizations">0</div>
+                <div class="stat-label">优化建议生成</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-number" id="avgScore">--</div>
+                <div class="stat-label">平均匹配分数</div>
+            </div>
+        </div>
+        
+        <!-- 高频技能模块 -->
+        <div class="chart-section">
+            <div class="section-title">🏆 高频技能词云 · 热度排名</div>
+            <div class="skills-container" id="skillsContainer">
+                <div class="empty-state">暂无数据，完成简历分析后展示热门技能</div>
+            </div>
+        </div>
+        
+        <!-- 周活跃度柱状图 -->
+        <div class="chart-section">
+            <div class="section-title">📅 近7天活跃度（分析+匹配+优化）</div>
+            <div class="week-bars" id="weekBars"></div>
+        </div>
+        
+        <!-- 月度趋势柱状图 -->
+        <div class="chart-section">
+            <div class="section-title">📈 月度操作趋势（近6个月）</div>
+            <div class="month-bars" id="monthBars"></div>
+        </div>
+        
+        <!-- 匹配度分布卡片 -->
+        <div class="chart-section">
+            <div class="section-title">📊 简历-岗位匹配度分布</div>
+            <div class="score-distribution" id="scoreDistribution"></div>
+        </div>
+        
+        <!-- 最近活动流水 -->
+        <div class="chart-section">
+            <div class="section-title">⏰ 最近动态 · 实时记录</div>
+            <div class="recent-list" id="recentList"></div>
+        </div>
+        
+        <div class="footer-actions">
+            <button class="btn-refresh" id="refreshBtn">🔄 刷新看板数据</button>
+        </div>
+    </div>
+</div>
+
+<!-- 引入依赖库（与现有框架兼容） -->
+<script src="lib/llm-service.js"></script>
+<script src="lib/ai-core.js"></script>
+<script src="lib/data-stats.js"></script>
+<script src="dashboard.js"></script>
+
+<!-- 确保所有动态内容加载后文字颜色对比清晰，并提供后备增强 -->
+<script>
+    (function() {
+        // 增强样式补丁：确保任何动态生成的文本都有足够亮色
+        const stylePatch = document.createElement('style');
+        stylePatch.textContent = `
+            .stat-number, .score-circle, .skill-tag, .week-value, .month-value {
+                text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            }
+            .recent-name {
+                font-weight: 500;
+                letter-spacing: 0.2px;
+            }
+            select, input, textarea, .report-select {
+                color: #ffffff !important;
+                background: rgba(20, 15, 40, 0.9) !important;
+            }
+            .empty-state {
+                color: #cdc9ff !important;
+                font-weight: 500;
+            }
+            .section-title {
+                text-shadow: 0 0 2px rgba(0,0,0,0.3);
+            }
+            .btn-back, .btn-danger, .btn-refresh {
+                font-weight: 600;
+            }
+        `;
+        document.head.appendChild(stylePatch);
+        
+        // 监听页面完成，确保如果有加载失败或者data-stats未及时填充，手动触发一次refresh兼容
+        window.addEventListener('DOMContentLoaded', function() {
+            // 如果存在refreshData函数（由dashboard.js提供），触发更新；否则等待
+            if (typeof window.refreshDashboardData === 'function') {
+                setTimeout(() => window.refreshDashboardData(), 100);
+            } else if (typeof window.loadDashboardStats === 'function') {
+                setTimeout(() => window.loadDashboardStats(), 100);
+            } else {
+                // 模拟：部分旧版dashboard可能有init，延迟调用
+                if (document.querySelector('#refreshBtn')) {
+                    const refreshEv = new CustomEvent('click');
+                    setTimeout(() => {
+                        const btn = document.getElementById('refreshBtn');
+                        if (btn) btn.dispatchEvent(refreshEv);
+                    }, 200);
+                }
+            }
+            // 额外确保数字卡片不会因为透明导致看不清，背景加强
+            const statNumbers = document.querySelectorAll('.stat-number');
+            if(statNumbers.length) {
+                statNumbers.forEach(el => {
+                    if(el.innerText === '0' || el.innerText === '--') {
+                        // 保持可读
+                    }
+                });
+            }
+        });
+    })();
+</script>
+</body>
+</html>

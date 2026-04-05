@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>批量简历分析 - 智能处理引擎</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #f0f3fa;
+        }
+        
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 30px 24px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h2 {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ffffff 0%, #e0d6ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.3px;
+        }
+        
+        .btn-back {
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 8px 22px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+        
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.32);
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* 上传区域 - 高对比虚线框 */
+        .upload-area {
+            background: rgba(25, 20, 48, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 44px 32px;
+            text-align: center;
+            border: 2px dashed rgba(167, 139, 250, 0.7);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .upload-area:hover {
+            border-color: #a78bfa;
+            background: rgba(108, 92, 231, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .upload-icon {
+            font-size: 52px;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .upload-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: #f0ecff;
+        }
+        
+        /* 文件列表卡片 */
+        .file-list {
+            background: rgba(25, 20, 48, 0.75);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            margin-bottom: 24px;
+            max-height: 240px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            transition: background 0.15s;
+        }
+        
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .file-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #f3efff;
+            word-break: break-word;
+        }
+        
+        .file-size {
+            font-size: 12px;
+            color: #bcb2ff;
+            margin-left: 12px;
+        }
+        
+        .remove-file {
+            background: rgba(244, 67, 54, 0.85);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .remove-file:hover {
+            background: #f44336;
+            transform: scale(1.05);
+        }
+        
+        /* 选项卡片 */
+        .options {
+            background: rgba(25, 20, 48, 0.75);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .option-item label {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(15, 12, 32, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 450;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.3);
+        }
+        
+        select option {
+            background: #1e1a38;
+            color: #f2eeff;
+        }
+        
+        /* 主要按钮 */
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #6c5ce7 0%, #8e44ad 100%);
+            border: none;
+            border-radius: 60px;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s;
+            margin-bottom: 24px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.3px;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(108, 92, 231, 0.5);
+            filter: brightness(1.02);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+        
+        /* 进度区域 */
+        .progress-area {
+            background: rgba(25, 20, 48, 0.8);
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+        }
+        
+        .progress-bar {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            height: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(135deg, #a78bfa, #6d28d9);
+            width: 0%;
+            height: 100%;
+            transition: width 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            border-radius: 20px;
+        }
+        
+        .progress-status {
+            font-size: 14px;
+            font-weight: 500;
+            color: #ddd6fe;
+            margin-top: 14px;
+            text-align: center;
+        }
+        
+        /* 结果区域 */
+        .results-area {
+            background: rgba(20, 18, 45, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 24px;
+            max-height: 480px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            display: none;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 24px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            flex: 1;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 12px 8px;
+            border-radius: 24px;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #d9cdff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #ddd0ff;
+            margin-top: 6px;
+        }
+        
+        .result-item {
+            padding: 18px;
+            border-radius: 24px;
+            margin-bottom: 16px;
+            background: rgba(255, 255, 255, 0.06);
+            transition: all 0.15s;
+        }
+        
+        .result-success {
+            border-left: 5px solid #10b981;
+            background: rgba(16, 185, 129, 0.08);
+        }
+        
+        .result-fail {
+            border-left: 5px solid #ef4444;
+            background: rgba(239, 68, 68, 0.08);
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .result-file {
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+            word-break: break-word;
+        }
+        
+        .result-status {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 14px;
+            border-radius: 40px;
+            letter-spacing: 0.3px;
+        }
+        
+        .status-success {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .status-fail {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .result-preview {
+            font-size: 13px;
+            color: #e2dcff;
+            line-height: 1.55;
+            max-height: 100px;
+            overflow-y: auto;
+            padding-right: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 18px;
+            padding: 12px;
+            margin-top: 8px;
+        }
+        
+        .btn-toggle-full {
+            margin-top: 12px;
+            padding: 6px 16px;
+            background: rgba(59, 130, 246, 0.85);
+            border: none;
+            border-radius: 32px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .btn-toggle-full:hover {
+            background: #3b82f6;
+            transform: translateY(-1px);
+        }
+        
+        .result-full {
+            margin-top: 14px;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.45);
+            border-radius: 20px;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            max-height: 320px;
+            overflow-y: auto;
+            color: #f3f0ff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 14px;
+            margin-top: 24px;
+        }
+        
+        .btn-export, .btn-secondary {
+            flex: 1;
+            padding: 11px 12px;
+            background: rgba(52, 152, 219, 0.85);
+            border: none;
+            border-radius: 48px;
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .btn-export:hover, .btn-secondary:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+        
+        /* 滚动条 */
+        .results-area::-webkit-scrollbar,
+        .result-preview::-webkit-scrollbar,
+        .result-full::-webkit-scrollbar,
+        .file-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .results-area::-webkit-scrollbar-track,
+        .file-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+        
+        .results-area::-webkit-scrollbar-thumb,
+        .file-list::-webkit-scrollbar-thumb {
+            background: #a78bfa;
+            border-radius: 10px;
+        }
+        
+        /* 辅助类 */
+        .empty-hint {
+            color: #cbc3ff;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>📚 批量简历分析 · 高效评估</h2>
+        <button class="btn-back" id="backBtn">← 返回看板</button>
+    </div>
+    
+    <div class="content">
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">点击选择多个 PDF 文件</div>
+            <div style="font-size: 12px; color: #cdc6ff; margin-top: 10px;">支持批量选择，最多20个文件，智能解析</div>
+        </div>
+        
+        <div class="file-list" id="fileList" style="display: none;"></div>
+        
+        <div class="options">
+            <div class="option-item">
+                <label>🔍 分析深度</label>
+                <select id="batchDepth">
+                    <option value="basic">快速分析（核心技能+评分）</option>
+                    <option value="detailed" selected>深度分析（技能+经历+面试建议）</option>
+                    <option value="interview">面试准备（生成面试问题）</option>
+                </select>
+            </div>
+        </div>
+        
+        <button class="btn-primary" id="startBtn" disabled>🚀 开始批量分析</button>
+        
+        <div class="progress-area" id="progressArea">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-status" id="progressStatus">⚡ 等待启动</div>
+        </div>
+        
+        <div class="results-area" id="resultsArea"></div>
+        
+        <div class="export-buttons" id="exportButtons" style="display: none;">
+            <button class="btn-secondary" id="exportJsonBtn">📄 导出 JSON 报告</button>
+            <button class="btn-secondary" id="exportMdBtn">📝 导出 Markdown 摘要</button>
+        </div>
+    </div>
+</div>
+
+<!-- 核心库依赖（保持原始架构顺序） -->
+<script src="lib/llm-service.js"></script>
+<script src="lib/ai-core.js"></script>
+<script src="lib/pdf-reader.js"></script>
+<script src="skills/resume-analyzer.js"></script>
+<script src="lib/batch-analyzer.js"></script>
+<script src="batch.js"></script>
+
+<!-- 附加样式增强，确保动态文本对比度清晰 -->
+<script>
+    (function() {
+        const stylePatch = document.createElement('style');
+        stylePatch.textContent = `
+            .result-preview, .result-full, .file-name, .progress-status {
+                text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+            }
+            .stat-number {
+                text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            }
+            .btn-primary:active, .btn-back:active {
+                transform: scale(0.97);
+            }
+            .option-item select {
+                cursor: pointer;
+            }
+            .upload-text, .upload-icon {
+                transition: 0.1s;
+            }
+            .result-item .result-preview::-webkit-scrollbar {
+                width: 4px;
+            }
+            select:disabled {
+                opacity: 0.6;
+            }
+        `;
+        document.head.appendChild(stylePatch);
+        
+        // 确保文件列表加载后显示友好提示
+        window.addEventListener('DOMContentLoaded', function() {
+            const fileListDiv = document.getElementById('fileList');
+            if (fileListDiv && fileListDiv.children.length === 0 && fileListDiv.style.display !== 'none') {
+                // 不强制干预，batch.js 会填充
+            }
+            // 启用/禁用按钮样式联动
+            const startBtn = document.getElementById('startBtn');
+            if (startBtn) {
+                const observer = new MutationObserver(function(muts) {
+                    muts.forEach(function(mut) {
+                        if (mut.attributeName === 'disabled') {
+                            startBtn.style.opacity = startBtn.disabled ? '0.6' : '1';
+                            startBtn.style.cursor = startBtn.disabled ? 'not-allowed' : 'pointer';
+                        }
+                    });
+                });
+                observer.observe(startBtn, { attributes: true });
+            }
+        });
+    })();
+</script>
+</body>
+</html>

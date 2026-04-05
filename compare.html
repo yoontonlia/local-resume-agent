@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>报告对比分析 - 智能差异洞察</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #f0f3fa;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px 24px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h2 {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ffffff 0%, #e0d6ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.3px;
+        }
+        
+        .btn-back {
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 8px 22px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+        
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.32);
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* 选择卡片区域 - 增强对比和可读性 */
+        .selection-area {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .report-card {
+            flex: 1;
+            background: rgba(25, 20, 48, 0.82);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .report-card:hover {
+            border-color: #a78bfa;
+            background: rgba(108, 92, 231, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .report-card.selected {
+            border-color: #c084fc;
+            background: rgba(139, 92, 246, 0.25);
+            box-shadow: 0 0 0 1px rgba(192, 132, 252, 0.5), 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .report-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.2px;
+        }
+        
+        .report-file {
+            font-size: 14px;
+            font-weight: 500;
+            color: #e2dcff;
+            margin-bottom: 8px;
+            word-break: break-all;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 12px;
+            border-radius: 24px;
+            display: inline-block;
+        }
+        
+        .report-time {
+            font-size: 12px;
+            color: #bfb9f0;
+            margin-bottom: 14px;
+            font-weight: 450;
+        }
+        
+        .report-preview {
+            font-size: 13px;
+            color: #f0edff;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            max-height: 110px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+        
+        /* 对比按钮 */
+        .compare-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 60px;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s;
+            margin-bottom: 24px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.3px;
+        }
+        
+        .compare-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(245, 87, 108, 0.5);
+            filter: brightness(1.02);
+        }
+        
+        .compare-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+        
+        .thinking {
+            background: rgba(108, 92, 231, 0.3);
+            border-radius: 24px;
+            padding: 18px 24px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 15px;
+            color: #e2dcff;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+        }
+        
+        .spinner {
+            width: 22px;
+            height: 22px;
+            border: 2.5px solid #cbb2ff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .result-area {
+            background: rgba(20, 18, 45, 0.88);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 26px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            display: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            gap: 10px;
+        }
+        
+        .result-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+        
+        .result-time {
+            font-size: 12px;
+            color: #cbc3ff;
+            font-weight: 450;
+        }
+        
+        .result-content {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #f3efff;
+            white-space: pre-wrap;
+            max-height: 520px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 14px;
+            margin-top: 24px;
+        }
+        
+        .btn-export, .btn-secondary {
+            flex: 1;
+            padding: 10px 12px;
+            background: rgba(52, 152, 219, 0.85);
+            border: none;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .btn-export:hover, .btn-secondary:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+        
+        /* 历史记录列表 */
+        .history-list {
+            margin-top: 32px;
+            background: rgba(25, 20, 48, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 26px;
+            padding: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: none;
+        }
+        
+        .history-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #f0e9ff;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.2px;
+            border-left: 3px solid #a78bfa;
+            padding-left: 12px;
+        }
+        
+        .history-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 18px;
+            margin-bottom: 6px;
+        }
+        
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(5px);
+        }
+        
+        .history-files {
+            font-size: 14px;
+            font-weight: 500;
+            color: #f0ebff;
+        }
+        
+        .history-time {
+            font-size: 11px;
+            color: #bcb2ff;
+            margin-top: 6px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #cfc9ff;
+            font-size: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 28px;
+        }
+        
+        /* 滚动条精致化 */
+        .result-content::-webkit-scrollbar,
+        .report-preview::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .result-content::-webkit-scrollbar-track,
+        .report-preview::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+        
+        .result-content::-webkit-scrollbar-thumb,
+        .report-preview::-webkit-scrollbar-thumb {
+            background: #a78bfa;
+            border-radius: 10px;
+        }
+        
+        /* 增强对比补丁 */
+        .report-card .report-file, .report-card .report-time {
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+        }
+        
+        .result-content strong, .result-content b {
+            color: #ffd966;
+        }
+        
+        .result-content ul, .result-content ol {
+            margin-left: 1.4rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>🔍 报告对比分析 · 智能评估</h2>
+        <button class="btn-back" id="backBtn">← 返回看板</button>
+    </div>
+    
+    <div class="content">
+        <div class="selection-area">
+            <div class="report-card" id="reportACard">
+                <div class="report-title">📄 报告 A</div>
+                <div class="report-file" id="reportAFile">未选择报告</div>
+                <div class="report-time" id="reportATime"></div>
+                <div class="report-preview" id="reportAPreview">点击卡片选择一份已生成的简历分析报告</div>
+            </div>
+            <div class="report-card" id="reportBCard">
+                <div class="report-title">📄 报告 B</div>
+                <div class="report-file" id="reportBFile">未选择报告</div>
+                <div class="report-time" id="reportBTime"></div>
+                <div class="report-preview" id="reportBPreview">点击卡片选择另一份报告进行对比</div>
+            </div>
+        </div>
+        
+        <button class="compare-btn" id="compareBtn" disabled>⚖️ 开始深度对比分析</button>
+        
+        <div class="thinking" id="thinking">
+            <div class="spinner"></div>
+            <span>🧠 AI 正在解析两份报告，从技能、匹配度、优化方向等维度交叉对比...</span>
+        </div>
+        
+        <div class="result-area" id="resultArea">
+            <div class="result-header">
+                <span class="result-title">📊 对比分析报告</span>
+                <span class="result-time" id="resultTime"></span>
+            </div>
+            <div class="result-content" id="resultContent"></div>
+            <div class="export-buttons" id="exportButtons" style="display: none;">
+                <button class="btn-secondary" id="exportMdBtn">📝 导出 Markdown</button>
+                <button class="btn-secondary" id="exportTxtBtn">📄 导出 TXT</button>
+            </div>
+        </div>
+        
+        <div class="history-list" id="historyList" style="display: none;">
+            <div class="history-title">📜 近期对比记录</div>
+            <div id="historyItems"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 核心库依赖（保持原有架构） -->
+<script src="lib/llm-service.js"></script>
+<script src="lib/ai-core.js"></script>
+<script src="lib/report-comparer.js"></script>
+<script src="compare.js"></script>
+
+<!-- 附加视觉增强和可用性补丁，确保字体清晰且交互友好 -->
+<script>
+    (function() {
+        // 注入样式增强，确保动态元素和占位内容对比度足够
+        const stylePatch = document.createElement('style');
+        stylePatch.textContent = `
+            .report-card .report-preview {
+                color: #f0ecff;
+                font-weight: 450;
+            }
+            .compare-btn:active {
+                transform: scale(0.97);
+            }
+            .history-item .history-files {
+                letter-spacing: 0.2px;
+            }
+            .report-card.selected .report-title {
+                text-shadow: 0 0 5px rgba(192, 132, 252, 0.5);
+            }
+            .empty-state, .report-card .report-preview:empty::before {
+                color: #cdc5ff;
+            }
+            select, input, textarea {
+                color: #ffffff;
+                background: rgba(15, 12, 32, 0.95);
+            }
+            .btn-back, .compare-btn {
+                font-weight: 600;
+            }
+        `;
+        document.head.appendChild(stylePatch);
+        
+        // 辅助：等待报告列表加载完成后刷新卡片显示
+        window.addEventListener('DOMContentLoaded', function() {
+            // 如果compare.js中存在刷新报告列表函数则调用，避免显示未选择
+            if (typeof window.loadReportsList === 'function') {
+                setTimeout(() => window.loadReportsList(), 100);
+            } else if (typeof window.refreshReportCards === 'function') {
+                setTimeout(() => window.refreshReportCards(), 100);
+            } else if (typeof window.initComparePage === 'function') {
+                setTimeout(() => window.initComparePage(), 100);
+            } else {
+                // 至少让默认文本可见
+                const aFile = document.getElementById('reportAFile');
+                const bFile = document.getElementById('reportBFile');
+                if (aFile && aFile.innerText === '未选择报告') {
+                    // 保持占位符可见
+                }
+            }
+            
+            // 修复禁用按钮的透明度
+            const compareBtn = document.getElementById('compareBtn');
+            if (compareBtn) {
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mut) {
+                        if (mut.attributeName === 'disabled') {
+                            compareBtn.style.opacity = compareBtn.disabled ? '0.6' : '1';
+                            compareBtn.style.cursor = compareBtn.disabled ? 'not-allowed' : 'pointer';
+                        }
+                    });
+                });
+                observer.observe(compareBtn, { attributes: true });
+            }
+        });
+    })();
+</script>
+</body>
+</html>

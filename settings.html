@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>API配置 - 简历智能分析助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #f0f3fa;
+        }
+        
+        /* 主容器 */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+        
+        /* 卡片 - 增强对比和毛玻璃 */
+        .card {
+            background: rgba(25, 20, 48, 0.85);
+            backdrop-filter: blur(14px);
+            border-radius: 32px;
+            padding: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* 头部区域 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .header h2 {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ffffff 0%, #e0d6ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.3px;
+        }
+        
+        .btn-back {
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 8px 22px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+        
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.32);
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* 信息提示框 - 高亮 */
+        .info-box {
+            background: rgba(108, 92, 231, 0.28);
+            padding: 18px;
+            border-radius: 24px;
+            margin-bottom: 28px;
+            font-size: 13px;
+            color: #f0ecff;
+            border-left: 4px solid #a78bfa;
+            backdrop-filter: blur(4px);
+            line-height: 1.5;
+        }
+        
+        .info-box a {
+            color: #c4b5fd;
+            text-decoration: none;
+            border-bottom: 1px dotted #c4b5fd;
+        }
+        
+        .info-box a:hover {
+            color: #e0d6ff;
+        }
+        
+        /* 表单组 */
+        .form-group {
+            margin-bottom: 26px;
+        }
+        
+        label {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 13px 18px;
+            background: rgba(15, 12, 32, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 20px;
+            font-size: 14px;
+            color: #ffffff;
+            transition: all 0.2s;
+            font-weight: 450;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #a78bfa;
+            background: rgba(30, 25, 60, 0.98);
+            box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.3);
+        }
+        
+        select option {
+            background: #1e1a38;
+            color: #f2eeff;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            font-weight: 450;
+            color: #bcb2ff;
+            margin-top: 8px;
+        }
+        
+        /* 按钮组 */
+        .btn-group {
+            display: flex;
+            gap: 14px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-primary {
+            flex: 1;
+            padding: 14px;
+            background: linear-gradient(135deg, #6c5ce7 0%, #8e44ad 100%);
+            border: none;
+            border-radius: 48px;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.3px;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(108, 92, 231, 0.5);
+            filter: brightness(1.02);
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            padding: 14px;
+            background: rgba(59, 130, 246, 0.9);
+            border: none;
+            border-radius: 48px;
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: #3b82f6;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px #3b82f680;
+        }
+        
+        /* 状态提示 */
+        .status {
+            margin-top: 24px;
+            padding: 14px 20px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            backdrop-filter: blur(4px);
+            line-height: 1.5;
+        }
+        
+        .status-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #a7f3d0;
+            border-left: 4px solid #10b981;
+            display: block;
+        }
+        
+        .status-error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #fecaca;
+            border-left: 4px solid #ef4444;
+            display: block;
+        }
+        
+        /* 辅助样式 */
+        .btn-primary:active, .btn-secondary:active, .btn-back:active {
+            transform: scale(0.97);
+        }
+        
+        input::placeholder, select:invalid {
+            color: #b9b2f0;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <h2>⚙️ API 配置 · 模型接入</h2>
+            <button class="btn-back" id="backBtn">← 返回</button>
+        </div>
+        
+        <div class="info-box">
+            💡 提示：配置后所有AI分析将使用您自己的 API Key，数据更安全。<br>
+            ✨ 支持 <strong>DeepSeek</strong>（国内推荐）、<strong>OpenAI</strong> 及兼容接口。
+        </div>
+        
+        <div class="form-group">
+            <label>🤖 模型提供商</label>
+            <select id="provider">
+                <option value="deepseek">DeepSeek（推荐，国内可用）</option>
+                <option value="openai">OpenAI</option>
+                <option value="custom">自定义（OpenAI兼容接口）</option>
+            </select>
+        </div>
+        
+        <div class="form-group" id="apiUrlGroup" style="display: none;">
+            <label>🔗 API 地址</label>
+            <input type="text" id="apiUrl" placeholder="https://api.openai.com/v1/chat/completions">
+            <div class="help-text">填写自定义 API 基础地址 (需兼容 OpenAI 格式)</div>
+        </div>
+        
+        <div class="form-group">
+            <label>🔑 API Key</label>
+            <input type="password" id="apiKey" placeholder="请输入您的 API Key">
+            <div class="help-text" id="apiKeyHelp">DeepSeek Key 获取：https://platform.deepseek.com/api_keys</div>
+        </div>
+        
+        <div class="form-group">
+            <label>📌 模型名称（可选）</label>
+            <input type="text" id="model" placeholder="deepseek-chat / gpt-3.5-turbo / 自定义模型">
+            <div class="help-text">留空将使用当前提供商推荐的默认模型</div>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn-primary" id="saveBtn">💾 保存配置</button>
+            <button class="btn-secondary" id="testBtn">🔌 测试连接</button>
+        </div>
+        
+        <div id="status" class="status"></div>
+    </div>
+</div>
+
+<!-- 核心依赖 -->
+<script src="lib/llm-service.js"></script>
+<script src="settings.js"></script>
+
+<!-- 额外样式补丁与增强脚本，确保动态文字清晰可见 -->
+<script>
+    (function() {
+        // 增加额外的样式确保下拉框选项可读性极佳
+        const stylePatch = document.createElement('style');
+        stylePatch.textContent = `
+            select option {
+                background: #1e1a38 !important;
+                color: #f0ecff !important;
+                padding: 8px;
+            }
+            .status-success, .status-error {
+                font-weight: 500;
+                backdrop-filter: blur(6px);
+            }
+            .info-box strong {
+                color: #e0d6ff;
+            }
+            input:focus, select:focus {
+                border-color: #c084fc;
+            }
+            .help-text a {
+                color: #b794f4;
+                text-decoration: none;
+            }
+            .help-text a:hover {
+                text-decoration: underline;
+            }
+        `;
+        document.head.appendChild(stylePatch);
+        
+        // 联动提供商切换时更新帮助文本与API URL可见性
+        const providerSelect = document.getElementById('provider');
+        const apiUrlGroup = document.getElementById('apiUrlGroup');
+        const apiKeyHelp = document.getElementById('apiKeyHelp');
+        
+        function updateProviderUI() {
+            const provider = providerSelect ? providerSelect.value : 'deepseek';
+            if (provider === 'custom') {
+                if (apiUrlGroup) apiUrlGroup.style.display = 'block';
+                if (apiKeyHelp) apiKeyHelp.innerHTML = '自定义 API Key，请确保接口兼容 OpenAI 格式';
+            } else {
+                if (apiUrlGroup) apiUrlGroup.style.display = 'none';
+                if (provider === 'deepseek') {
+                    if (apiKeyHelp) apiKeyHelp.innerHTML = 'DeepSeek Key 获取：<a href="https://platform.deepseek.com/api_keys" target="_blank" style="color:#b794f4;">https://platform.deepseek.com/api_keys</a>';
+                } else if (provider === 'openai') {
+                    if (apiKeyHelp) apiKeyHelp.innerHTML = 'OpenAI Key 获取：<a href="https://platform.openai.com/api-keys" target="_blank" style="color:#b794f4;">https://platform.openai.com/api-keys</a>';
+                } else {
+                    if (apiKeyHelp) apiKeyHelp.innerHTML = '请输入有效的 API Key';
+                }
+            }
+        }
+        
+        if (providerSelect) {
+            providerSelect.addEventListener('change', updateProviderUI);
+            updateProviderUI();
+        }
+        
+        // 确保页面加载后状态区域的文字也有较好对比
+        window.addEventListener('DOMContentLoaded', function() {
+            const statusDiv = document.getElementById('status');
+            if (statusDiv && statusDiv.innerText.trim() !== '') {
+                statusDiv.style.display = 'block';
+            }
+            // 修复任何潜在placeholder过暗
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(inp => {
+                inp.style.color = '#ffffff';
+            });
+        });
+    })();
+</script>
+</body>
+</html>

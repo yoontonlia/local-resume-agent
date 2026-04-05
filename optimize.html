@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>简历优化建议 | AI智能助手</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #f0f3fa;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 24px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .header h2 {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #ffffff 0%, #e0d6ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.3px;
+        }
+        
+        .btn-back {
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 8px 22px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
+        }
+        
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* 卡片通用样式 - 提高对比度 */
+        .card, .selection-area, .rewrite-area {
+            background: rgba(25, 20, 45, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 28px;
+            margin-bottom: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+        }
+        
+        .selection-area {
+            background: rgba(25, 20, 45, 0.8);
+        }
+        
+        .selection-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.2px;
+        }
+        
+        /* 下拉框、输入框等控件 - 增强可读性 */
+        select, input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(20, 15, 40, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 16px;
+            font-size: 14px;
+            color: #ffffff;
+            transition: all 0.2s;
+            font-weight: 450;
+        }
+        
+        select option {
+            background: #1e1a38;
+            color: #ffffff;
+        }
+        
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #a77cff;
+            background: rgba(30, 25, 60, 0.95);
+            box-shadow: 0 0 0 2px rgba(167, 124, 255, 0.3);
+            color: white;
+        }
+        
+        /* 占位符颜色提高可读 */
+        input::placeholder, textarea::placeholder {
+            color: rgba(220, 220, 255, 0.7);
+            font-weight: 400;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #f0f2ff;
+        }
+        
+        /* 按钮样式增强 */
+        .btn-primary, .optimize-btn, .rewrite-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6c5ce7 0%, #8e44ad 100%);
+            border: none;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.3px;
+        }
+        
+        .optimize-btn {
+            margin-top: 16px;
+            background: linear-gradient(135deg, #5f4bd6, #9b59b6);
+        }
+        
+        .btn-primary:hover:not(:disabled), .optimize-btn:hover:not(:disabled), .rewrite-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(108, 92, 231, 0.4);
+            filter: brightness(1.02);
+        }
+        
+        .btn-primary:disabled, .optimize-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .rewrite-btn {
+            width: auto;
+            padding: 12px 28px;
+            background: #27ae60;
+            box-shadow: none;
+            font-weight: 600;
+        }
+        
+        .rewrite-btn:hover {
+            background: #2ecc71;
+        }
+        
+        .thinking {
+            background: rgba(108, 92, 231, 0.28);
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 14px;
+            color: #e9eaff;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid #c3b4ff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .result-area {
+            background: rgba(20, 18, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 24px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            display: none;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .result-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+        
+        .result-time {
+            font-size: 12px;
+            color: rgba(230, 230, 255, 0.7);
+        }
+        
+        .result-content {
+            font-size: 15px;
+            line-height: 1.65;
+            color: #f3f5ff;
+            white-space: pre-wrap;
+            max-height: 460px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 14px;
+            margin-top: 24px;
+        }
+        
+        .btn-export, .btn-secondary {
+            flex: 1;
+            padding: 10px 12px;
+            background: rgba(52, 152, 219, 0.85);
+            border: none;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .btn-export:hover, .btn-secondary:hover {
+            background: rgba(41, 128, 185, 1);
+            transform: translateY(-1px);
+        }
+        
+        .rewrite-area {
+            background: rgba(25, 20, 45, 0.8);
+        }
+        
+        .rewrite-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .rewrite-input, .rewrite-instruction {
+            width: 100%;
+            padding: 14px;
+            background: rgba(15, 12, 32, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 18px;
+            font-size: 14px;
+            color: #f5f3ff;
+            margin-bottom: 14px;
+            font-weight: 450;
+        }
+        
+        .rewrite-input:focus, .rewrite-instruction:focus {
+            border-color: #a66eff;
+        }
+        
+        .rewrite-result {
+            margin-top: 18px;
+            padding: 18px;
+            background: rgba(20, 18, 45, 0.9);
+            border-radius: 20px;
+            font-size: 14px;
+            line-height: 1.65;
+            color: #f0f2fe;
+            display: none;
+            white-space: pre-wrap;
+            border-left: 4px solid #6c5ce7;
+        }
+        
+        /* 滚动条优化 */
+        .result-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .result-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .result-content::-webkit-scrollbar-thumb {
+            background: rgba(167, 124, 255, 0.6);
+            border-radius: 10px;
+        }
+        
+        /* 增加提示小图标和文字对比 */
+        .selection-title::before {
+            content: "📄";
+            font-size: 1.2rem;
+        }
+        
+        .rewrite-title::before {
+            content: "✨";
+        }
+        
+        .target-role {
+            margin-top: 4px;
+        }
+        
+        /* 下拉列表文字完全可见 */
+        .report-select {
+            color: #ffffff;
+            font-weight: 450;
+        }
+        
+        /* 让无效选项占位符可见 */
+        select:invalid, select option[value=""] {
+            color: #ddddff;
+        }
+        
+        .btn-secondary {
+            background: rgba(155, 89, 182, 0.8);
+        }
+        
+        .btn-secondary:hover {
+            background: #8e44ad;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>✏️ 简历优化建议</h2>
+        <button class="btn-back" id="backBtn">← 返回</button>
+    </div>
+    
+    <div class="content">
+        <!-- 选择简历区块 - 文字高对比 -->
+        <div class="selection-area">
+            <div class="selection-title">📄 选择要优化的简历</div>
+            <select id="reportSelect" class="report-select" style="color:white; background: rgba(0,0,0,0.6);">
+                <option value="" style="background:#2a234a; color:#cfd5ff;">-- 请选择一份已分析的简历 --</option>
+            </select>
+            
+            <div class="selection-title" style="margin-top: 20px;">🎯 目标职位（可选）</div>
+            <input type="text" id="targetRole" class="target-role" placeholder="例如：资深前端开发工程师 / 产品经理 / 数据分析师" style="color:white;">
+            
+            <button class="optimize-btn" id="optimizeBtn" disabled>🚀 生成优化建议</button>
+        </div>
+        
+        <div class="thinking" id="thinking">
+            <div class="spinner"></div>
+            <span>✨ AI 正在深度分析简历，生成个性化优化建议...</span>
+        </div>
+        
+        <div class="result-area" id="resultArea">
+            <div class="result-header">
+                <span class="result-title">📝 优化建议报告</span>
+                <span class="result-time" id="resultTime"></span>
+            </div>
+            <div class="result-content" id="resultContent"></div>
+            <div class="export-buttons" id="exportButtons" style="display: none;">
+                <button class="btn-secondary" id="exportMdBtn">📝 导出 Markdown</button>
+                <button class="btn-secondary" id="exportTxtBtn">📄 导出 TXT</button>
+            </div>
+        </div>
+        
+        <!-- 智能改写工具 -->
+        <div class="rewrite-area">
+            <div class="rewrite-title">✏️ 简历段落智能改写</div>
+            <textarea id="rewriteInput" class="rewrite-input" rows="3" placeholder="粘贴需要改写的简历段落（工作描述、项目经历等）..."></textarea>
+            <input type="text" id="rewriteInstruction" class="rewrite-instruction" placeholder="改写指令，例如：使用STAR法则 / 突出量化成果 / 更专业简洁 / 增强领导力">
+            <button class="rewrite-btn" id="rewriteBtn">✨ 智能改写</button>
+            <div class="rewrite-result" id="rewriteResult"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 核心库与业务逻辑 -->
+<script src="lib/llm-service.js"></script>
+<script src="lib/ai-core.js"></script>
+<script src="lib/resume-optimizer.js"></script>
+<script src="optimize.js"></script>
+
+<!-- 内嵌增强脚本：确保选择框内容可见、并处理样式细节 -->
+<script>
+    (function() {
+        // 增强下拉选项可见性（实时动态加载时保证每个option文本可读）
+        const style = document.createElement('style');
+        style.textContent = `
+            select option {
+                background: #1e1a3a !important;
+                color: #f0eefc !important;
+                font-size: 14px;
+                padding: 8px;
+            }
+            select optgroup option {
+                background: #1a1638;
+            }
+            .report-select {
+                background-color: rgba(25, 20, 48, 0.95) !important;
+            }
+            .target-role, .rewrite-instruction, .rewrite-input {
+                caret-color: #bb9eff;
+            }
+            .result-content strong, .result-content b {
+                color: #ffe4a3;
+            }
+            .result-content ul, .result-content li {
+                margin-left: 1.2rem;
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // 补丁：若optimize.js需要依赖加载完成后再启用，监听事件
+        window.addEventListener('DOMContentLoaded', () => {
+            const selectEl = document.getElementById('reportSelect');
+            if (selectEl && selectEl.options.length <= 1) {
+                // 尝试延迟重新读取简历数据 (兼容现有逻辑)
+                if (window.loadResumeList && typeof window.loadResumeList === 'function') {
+                    setTimeout(() => window.loadResumeList(), 100);
+                } else {
+                    // 如果现有逻辑未提供，模拟通知
+                    console.log("等待简历数据加载");
+                }
+            }
+            // 确保所有卡片按钮在暗色背景下都有足够对比
+            const btns = document.querySelectorAll('.optimize-btn, .rewrite-btn, .btn-back, .btn-export');
+            btns.forEach(btn => {
+                if(btn.style.backgroundColor === '') {
+                    btn.style.backdropFilter = 'blur(2px)';
+                }
+            });
+        });
+    })();
+</script>
+</body>
+</html>
