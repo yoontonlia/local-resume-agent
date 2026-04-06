@@ -1,6 +1,7 @@
 /**
- * 简历分析技能模块 - 使用模板管理器
+ * 简历分析技能模块 - 使用模板管理器 + MCP增强
  * 负责：技能提取、经历分析、评分、面试建议
+ * 支持 HR Toolkit MCP 增强（可选）
  */
 
 class ResumeAnalyzer {
@@ -35,23 +36,69 @@ class ResumeAnalyzer {
 
         // 清理文本
         const cleanedText = this._cleanResumeText(resumeText);
+        
+        // ========== MCP增强：尝试使用 HR Toolkit 提取结构化数据 ==========
+        let mcpSkillsData = null;
+        let mcpExperienceData = null;
+        
+        if (window.mcpClient && window.mcpClient.isMcpAvailable) {
+            try {
+                console.log('🔌 尝试使用 HR Toolkit 提取技能...');
+                mcpSkillsData = await window.mcpClient.extractSkillsStructured(cleanedText);
+                if (mcpSkillsData) {
+                    console.log('✅ HR Toolkit 技能提取成功，分类数:', Object.keys(mcpSkillsData).length);
+                }
+            } catch (mcpError) {
+                console.warn('⚠️ HR Toolkit 技能提取失败，使用 AI 分析:', mcpError);
+            }
+            
+            try {
+                console.log('🔌 尝试使用 HR Toolkit 提取工作经历...');
+                mcpExperienceData = await window.mcpClient.extractExperienceStructured(cleanedText);
+                if (mcpExperienceData) {
+                    console.log('✅ HR Toolkit 经历提取成功，条数:', mcpExperienceData.length);
+                }
+            } catch (mcpError) {
+                console.warn('⚠️ HR Toolkit 经历提取失败，使用 AI 分析:', mcpError);
+            }
+        } else {
+            console.log('⚡ MCP不可用，使用基础AI分析');
+        }
+        // ================================================================
 
         try {
+            let analysisResult = '';
+            
             // 确定使用的模板ID
             const useTemplateId = templateId || (window.templateManager ? window.templateManager.getCurrentTemplateId() : 'detailed');
             
-            // 从模板管理器获取提示词
-            let analysisResult = '';
+            // ========== 构建增强提示词（如果MCP数据可用） ==========
+            let enhancedPrompt = '';
+            if (mcpSkillsData || mcpExperienceData) {
+                enhancedPrompt = '【HR Toolkit 结构化数据】\n以下数据来自HR Toolkit的专业分析，请优先参考：\n\n';
+                if (mcpSkillsData) {
+                    enhancedPrompt += `### 技能分类\n\`\`\`json\n${JSON.stringify(mcpSkillsData, null, 2)}\n\`\`\`\n\n`;
+                }
+                if (mcpExperienceData) {
+                    enhancedPrompt += `### 工作经历时间线\n\`\`\`json\n${JSON.stringify(mcpExperienceData, null, 2)}\n\`\`\`\n\n`;
+                }
+                enhancedPrompt += '请结合以上结构化数据，进行更精准的简历分析。\n\n';
+            }
+            // ========================================================
             
             if (window.templateManager) {
                 // 使用模板管理器构建提示词
                 const { systemPrompt, userPrompt } = window.templateManager.buildPrompt(useTemplateId, cleanedText);
-                console.log(`使用模板: ${useTemplateId}`);
-                analysisResult = await window.aiCore.prompt(userPrompt, { systemPrompt });
+                
+                // 如果存在增强数据，添加到提示词前面
+                const finalUserPrompt = enhancedPrompt ? enhancedPrompt + userPrompt : userPrompt;
+                
+                console.log('使用模板:', useTemplateId, '增强模式:', !!enhancedPrompt);
+                analysisResult = await window.aiCore.prompt(finalUserPrompt, { systemPrompt });
             } else {
-                // 降级：如果模板管理器不存在，使用默认分析
+                // 降级：模板管理器不可用时使用默认分析
                 console.warn('模板管理器未加载，使用默认分析');
-                analysisResult = await this._defaultAnalysis(cleanedText);
+                analysisResult = await this._defaultAnalysis(cleanedText, enhancedPrompt);
             }
 
             // 保存到历史
@@ -77,8 +124,8 @@ class ResumeAnalyzer {
      * 默认分析（降级方案，当模板管理器不可用时使用）
      * @private
      */
-    async _defaultAnalysis(resumeText) {
-        const prompt = `请分析以下简历内容，提取关键信息：
+    async _defaultAnalysis(resumeText, enhancedPrompt = '') {
+        let prompt = `请分析以下简历内容，提取关键信息：
 
 【简历内容】
 ${resumeText.substring(0, 5000)}
@@ -88,6 +135,10 @@ ${resumeText.substring(0, 5000)}
 2. 工作经历总结
 3. 综合评分(1-10分)
 4. 简短建议`;
+
+        if (enhancedPrompt) {
+            prompt = enhancedPrompt + prompt;
+        }
 
         const systemPrompt = '你是专业的简历分析专家。';
         return await window.aiCore.prompt(prompt, { systemPrompt });

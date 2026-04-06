@@ -98,7 +98,33 @@ document.addEventListener('DOMContentLoaded', async function() {
             checkAndEnableAnalyzeBtn();
         });
     }
-    
+        // 初始化MCP客户端（可选增强）
+    if (window.mcpClient && typeof window.mcpClient.init === 'function') {
+        try {
+            await window.mcpClient.init();
+            const mcpStatus = window.mcpClient.getStatus();
+            
+            const mcpStatusBadge = document.getElementById('mcpStatusBadge');
+            if (mcpStatusBadge) {
+                if (mcpStatus.chromeDevTools || mcpStatus.hrToolkit) {
+                    let statusText = [];
+                    if (mcpStatus.chromeDevTools) statusText.push('🌐CDP');
+                    if (mcpStatus.hrToolkit) statusText.push('📄HR');
+                    mcpStatusBadge.textContent = `🔌 ${statusText.join('+')}`;
+                    mcpStatusBadge.style.background = '#4caf50';
+                    mcpStatusBadge.style.color = 'white';
+                    console.log('🚀 MCP增强模式已激活:', statusText);
+                } else {
+                    mcpStatusBadge.textContent = '⚡ 基础模式';
+                    mcpStatusBadge.style.background = 'rgba(255,255,255,0.15)';
+                }
+            }
+        } catch (e) {
+            console.warn('MCP初始化失败:', e);
+        }
+    } else {
+        console.log('MCP客户端未加载');
+    }
     // 初始化AI
     updateStatus('正在初始化AI模型...', false);
     const initSuccess = await window.aiCore.init();
@@ -242,6 +268,93 @@ document.addEventListener('DOMContentLoaded', async function() {
                 window.reportExporter?.exportResumeReport(lastAnalysisResult, lastFileName, 'txt');
             } else {
                 showError('没有可导出的结果');
+            }
+        });
+    }
+        // 导出优化版简历PDF
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', async () => {
+            if (!lastAnalysisResult || !lastFileName) {
+                showError('没有可导出的分析结果，请先分析简历');
+                return;
+            }
+            
+            let originalResumeText = currentResumeText;
+            if (!originalResumeText) {
+                showError('没有找到原始简历内容，请重新分析');
+                return;
+            }
+            
+            exportPdfBtn.disabled = true;
+            exportPdfBtn.textContent = '⏳ AI正在优化简历(可能需要30秒)...';
+            
+            // 显示进度提示
+            const progressDiv = document.createElement('div');
+            progressDiv.style.cssText = 'position: fixed; bottom: 20px; right: 20px; background: #1a1a2e; color: white; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+            progressDiv.innerHTML = '🔄 AI正在重写简历...<br>⏱️ 预计需要20-30秒';
+            document.body.appendChild(progressDiv);
+            
+            try {
+                // 1. AI重写简历
+                console.log('开始AI重写简历...');
+                progressDiv.innerHTML = '📝 正在优化工作经历...<br>⏱️ 请稍候...';
+                
+                const rewriteResult = await window.resumeRewriter.rewriteResume(
+                    originalResumeText,
+                    lastAnalysisResult,
+                    ''
+                );
+                
+                if (!rewriteResult.success) {
+                    throw new Error(rewriteResult.error);
+                }
+                
+                console.log('AI重写完成，长度:', rewriteResult.rewrittenText.length);
+                
+                // 2. 提取结构化数据
+                progressDiv.innerHTML = '📊 正在整理简历格式...';
+                
+                const structuredData = await window.resumeRewriter.extractStructuredData(rewriteResult.rewrittenText);
+                
+                let finalHtml;
+                
+                if (structuredData && structuredData.name) {
+                    console.log('使用结构化数据生成简历');
+                    // 确保数据完整
+                    if (!structuredData.workExperience) structuredData.workExperience = [];
+                    if (!structuredData.education) structuredData.education = [];
+                    if (!structuredData.skills) structuredData.skills = [];
+                    
+                    finalHtml = window.resumeTemplate.generateHTML(structuredData);
+                } else {
+                    console.log('使用文本转换生成简历');
+                    finalHtml = window.pdfExporter._textToHTML(rewriteResult.rewrittenText);
+                }
+                
+                // 3. 导出PDF
+                progressDiv.innerHTML = '📄 正在生成PDF文件...';
+                
+                const fileName = lastFileName.replace(/\.pdf$/i, '') + '_优化版';
+                const exportResult = await window.pdfExporter.exportToPDF(finalHtml, fileName + '.pdf');
+                
+                if (exportResult.success) {
+                    progressDiv.style.background = '#4caf50';
+                    progressDiv.innerHTML = '✅ 简历优化完成！<br>📑 新窗口已打开，请按 Ctrl+P 保存为PDF';
+                    setTimeout(() => progressDiv.remove(), 5000);
+                } else {
+                    throw new Error(exportResult.error);
+                }
+                
+            } catch (error) {
+                console.error('导出优化简历失败:', error);
+                progressDiv.style.background = '#f44336';
+                progressDiv.innerHTML = `❌ 导出失败: ${error.message}`;
+                setTimeout(() => progressDiv.remove(), 4000);
+                showError(`导出失败: ${error.message}`);
+            } finally {
+                exportPdfBtn.disabled = false;
+                exportPdfBtn.textContent = '📑 导出优化版简历';
             }
         });
     }
@@ -491,22 +604,82 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
     
+        // 从网页提取按钮（支持Chrome DevTools MCP）
     if (extractFromWebBtn) {
         extractFromWebBtn.addEventListener('click', async () => {
             extractFromWebBtn.disabled = true;
             extractFromWebBtn.textContent = '⏳ 提取中...';
+            
             try {
-                const result = await window.webExtractor.fillToTextarea(jobDescriptionElem);
-                if (result.success) {
-                    if (matchStatusElem) matchStatusElem.textContent = '✅ 提取成功';
-                    if (jobDescriptionElem.value.trim().length > 50 && currentResumeText && matchBtnElem) {
-                        matchBtnElem.disabled = false;
-                    }
-                } else {
-                    showMatchResult(`<div style="color: #d32f2f;">❌ 提取失败: ${result.error}</div>`);
+                const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                console.log('当前标签页URL:', tab.url);
+                
+                let success = false;
+                let jdText = '';
+                
+                // 检查是否是内部页面
+                if (tab.url.startsWith('chrome://') || tab.url.startsWith('edge://')) {
+                    showMatchResult('<div style="color: #d32f2f;">⚠️ 无法从浏览器内部页面提取内容</div>');
+                    return;
                 }
+                
+                // 方法1：尝试使用Chrome DevTools MCP增强提取
+                if (window.mcpClient && window.mcpClient.getStatus().chromeDevTools) {
+                    console.log('🔌 尝试使用Chrome DevTools MCP提取...');
+                    const enhancedResult = await window.mcpClient.enhancedWebExtract(tab.url);
+                    if (enhancedResult && enhancedResult.success) {
+                        jdText = enhancedResult.description || enhancedResult.title;
+                        success = true;
+                        console.log('Chrome DevTools MCP提取成功');
+                    }
+                }
+                
+                // 方法2：使用现有web-extractor（基础提取）
+                if (!success && window.webExtractor) {
+                    console.log('使用基础提取...');
+                    const result = await window.webExtractor.fillToTextarea(jobDescription);
+                    if (result.success && jobDescription.value.length > 50) {
+                        jdText = jobDescription.value;
+                        success = true;
+                    }
+                }
+                
+                // 方法3：直接注入脚本提取
+                if (!success) {
+                    console.log('使用脚本注入提取...');
+                    const [result] = await chrome.scripting.executeScript({
+                        target: { tabId: tab.id },
+                        func: () => {
+                            const selectors = [
+                                '.job-description', '.description', '.job-detail',
+                                '.job-sec-text', '.detail-content', 'article', 'main'
+                            ];
+                            for (const selector of selectors) {
+                                const elem = document.querySelector(selector);
+                                if (elem && elem.innerText.length > 100) {
+                                    return elem.innerText;
+                                }
+                            }
+                            return document.body.innerText.substring(0, 3000);
+                        }
+                    });
+                    if (result.result && result.result.length > 100) {
+                        jdText = result.result;
+                        success = true;
+                    }
+                }
+                
+                if (success && jdText.length > 50) {
+                    jobDescription.value = jdText;
+                    jobDescription.dispatchEvent(new Event('input'));
+                    matchStatus.textContent = `✅ 提取成功 (${jdText.length}字符)`;
+                } else {
+                    throw new Error('未能提取到有效内容');
+                }
+                
             } catch (error) {
-                showMatchResult(`<div style="color: #d32f2f;">❌ 提取失败: ${error.message}</div>`);
+                console.error('提取失败:', error);
+                showMatchResult(`<div style="color: #d32f2f;">❌ 提取失败: ${error.message}<br><br>💡 建议手动复制粘贴</div>`);
             } finally {
                 extractFromWebBtn.disabled = false;
                 extractFromWebBtn.textContent = '🌐 从当前网页提取招聘信息';

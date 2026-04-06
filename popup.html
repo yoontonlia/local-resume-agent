@@ -95,7 +95,7 @@
             gap: 8px;
             font-size: 12px;
             font-weight: 500;
-            color: rgba(255, 255, 245, 0.9);
+            color: rgba(255, 255, 245, 0.95);
             margin-top: 4px;
         }
         
@@ -162,14 +162,14 @@
             display: flex;
             align-items: center;
             margin: 16px 0;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.6);
             font-size: 11px;
             font-weight: 500;
         }
         .divider-line {
             flex: 1;
             height: 1px;
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.3);
         }
         .divider-text {
             padding: 0 12px;
@@ -323,9 +323,9 @@
             to { transform: rotate(360deg); }
         }
         
-        /* 结果区域 */
+        /* 结果区域 - 修复字体对比度问题 */
         .result-area {
-            background: rgba(20, 18, 45, 0.88);
+            background: rgba(25, 22, 55, 0.96);
             backdrop-filter: blur(12px);
             border-radius: 24px;
             padding: 18px;
@@ -335,19 +335,60 @@
             font-size: 13px;
             line-height: 1.65;
             display: none;
-            color: #f3efff;
-            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #f0ebff;
+            border: 1px solid rgba(167, 139, 250, 0.5);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
         
-        .result-area strong, .result-area b {
-            color: #ffd966;
+        /* 确保结果区域内所有文字清晰可见 */
+        .result-area,
+        .result-area * {
+            color: #f0ebff;
         }
         
-        .result-area ul, .result-area ol {
+        .result-area strong, 
+        .result-area b,
+        .result-area h1, 
+        .result-area h2, 
+        .result-area h3,
+        .result-area h4 {
+            color: #ffd966 !important;
+        }
+        
+        .result-area a {
+            color: #a78bfa;
+        }
+        
+        .result-area ul, 
+        .result-area ol {
             margin-left: 1.3rem;
         }
         
-        /* 导出按钮组 */
+        .result-area code, 
+        .result-area pre {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            padding: 4px 8px;
+            color: #e2dcff;
+        }
+        
+        /* 职位匹配结果区域同样修复 */
+        #matchResultArea {
+            background: rgba(25, 22, 55, 0.96);
+            border: 1px solid rgba(167, 139, 250, 0.5);
+        }
+        
+        #matchResultArea,
+        #matchResultArea * {
+            color: #f0ebff;
+        }
+        
+        #matchResultArea strong,
+        #matchResultArea b {
+            color: #ffd966 !important;
+        }
+        
+        /* 导出按钮组 - 调整比例，优化简历按钮更长 */
         .export-buttons {
             display: flex;
             gap: 12px;
@@ -371,6 +412,14 @@
         .btn-secondary:hover {
             background: #3b82f6;
             transform: translateY(-1px);
+        }
+        
+        /* 导出优化版简历按钮 - 独占更大比例 */
+        #exportPdfBtn {
+            flex: 1.6;
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            margin-bottom: 0;
+            font-size: 13px;
         }
         
         /* 职位匹配模块 */
@@ -483,6 +532,21 @@
             background: #a78bfa;
             border-radius: 10px;
         }
+        
+        /* 提示文字增强 */
+        .options-card .option-item div {
+            color: rgba(220, 210, 255, 0.8) !important;
+        }
+        
+        /* 确保任何动态插入的内容都有正确颜色 */
+        .markdown-body, .markdown-body * {
+            color: #f0ebff;
+        }
+        
+        .markdown-body strong,
+        .markdown-body b {
+            color: #ffd966;
+        }
     </style>
 </head>
 <body>
@@ -504,6 +568,7 @@
         <div class="status-bar">
             <span class="status-dot" id="statusDot"></span>
             <span id="statusText">正在初始化AI模型...</span>
+            <span id="mcpStatusBadge" style="margin-left: auto; font-size: 10px; padding: 2px 8px; border-radius: 12px; background: rgba(255,255,255,0.15);"></span>
         </div>
     </div>
 
@@ -537,13 +602,12 @@
                 <select id="templateSelect">
                     <option value="">加载中...</option>
                 </select>
-                <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px;">
-                        💡 可在"模板管理"中自定义分析模板
+                <div style="font-size: 11px; color: rgba(220, 210, 255, 0.8); margin-top: 6px;">
+                    💡 可在"模板管理"中自定义分析模板
                 </div>
             </div>
         </div>
             
-        
         <!-- 开始分析按钮 -->
         <button class="btn-primary" id="analyzeBtn" disabled>✨ 开始分析简历</button>
         
@@ -556,10 +620,11 @@
         <!-- 结果展示区域 -->
         <div class="result-area" id="resultArea"></div>
         
-        <!-- 导出按钮区域 -->
+        <!-- 导出按钮区域 - 调整比例 -->
         <div id="exportButtons" style="display: none;" class="export-buttons">
-            <button id="exportMdBtn" class="btn-secondary" style="background: #10b981;">📝 导出 Markdown</button>
+            <button id="exportMdBtn" class="btn-secondary" style="background: #10b981;">📝 导出 MD</button>
             <button id="exportTxtBtn" class="btn-secondary" style="background: #3b82f6;">📄 导出 TXT</button>
+            <button id="exportPdfBtn" class="btn-primary" style="background: linear-gradient(135deg, #4caf50, #2e7d32); margin-bottom: 0;">📑 导出优化版简历</button>
         </div>
         
         <!-- 职位匹配面板 -->
@@ -567,7 +632,7 @@
             <div class="match-title">
                 <span>🎯</span>
                 <span>职位匹配分析</span>
-                <span style="font-size: 11px; font-weight: normal; color: #bcb2ff;">粘贴JD或从网页提取</span>
+                <span style="font-size: 11px; font-weight: normal; color: #c4bcff;">粘贴JD或从网页提取</span>
             </div>
             
             <button id="extractFromWebBtn" class="extract-btn">
@@ -592,29 +657,31 @@
     </div>
 </div>
 
-<!-- 核心库：AI服务和LLM服务必须优先 -->
-<script src="lib/llm-service.js"></script>
-<script src="lib/ai-core.js"></script>
-<script src="lib/template-manager.js"></script>
-<script src="lib/skill-loader.js"></script>
-
-<!-- 其他功能模块 -->
-<script src="lib/pdf.min.js"></script>
-<script src="lib/pdf-reader.js"></script>
-<script src="lib/web-extractor.js"></script>
-<script src="lib/report-exporter.js"></script>
-<script src="lib/history-manager.js"></script>
-<script src="lib/batch-analyzer.js"></script>
-<script src="lib/report-comparer.js"></script>
-<script src="lib/resume-optimizer.js"></script>
-<script src="lib/job-matcher-enhanced.js"></script>
-
-<!-- 技能模块 -->
-<script src="skills/resume-analyzer.js"></script>
-<script src="skills/job-matcher.js"></script>
-
-<!-- 主逻辑 -->
-<script src="popup.js"></script>
+    <!-- 核心库：必须先加载 -->
+    <script src="lib/llm-service.js"></script>
+    <script src="lib/ai-core.js"></script>
+    <script src="lib/mcp-client.js"></script>  <!-- MCP客户端必须在 popup.js 之前 -->
+    <script src="lib/template-manager.js"></script>
+    <script src="lib/skill-loader.js"></script>
+    <script src="lib/resume-template.js"></script>
+    <script src="lib/resume-rewriter.js"></script>
+    <script src="lib/pdf-exporter.js"></script>
+    <script src="lib/pdf-reader.js"></script>
+    <script src="lib/web-extractor.js"></script>
+    <script src="lib/report-exporter.js"></script>
+    <script src="lib/history-manager.js"></script>
+    <script src="lib/batch-analyzer.js"></script>
+    <script src="lib/report-comparer.js"></script>
+    <script src="lib/resume-optimizer.js"></script>
+    <script src="lib/job-matcher-enhanced.js"></script>
+    
+    
+    <!-- 技能模块 -->
+    <script src="skills/resume-analyzer.js"></script>
+    <script src="skills/job-matcher.js"></script>
+    
+    <!-- 主逻辑（最后加载） -->
+    <script src="popup.js"></script>
 
 <!-- 补充内联增强确保样式完美适配 -->
 <script>
@@ -627,8 +694,8 @@
                 color: #f0ecff !important;
                 padding: 8px;
             }
-            .result-area p, .result-area li {
-                color: #f3efff;
+            .result-area p, .result-area li, .result-area span, .result-area div {
+                color: #f0ebff;
             }
             .btn-primary:active, .match-btn:active, .extract-btn:active {
                 transform: scale(0.97);
@@ -671,6 +738,29 @@
                 }
             }, 500);
         }
+        
+        // 监听结果区域动态内容，确保新插入的内容颜色正确
+        const resultArea = document.getElementById('resultArea');
+        const matchResultArea = document.getElementById('matchResultArea');
+        
+        function fixResultColors(element) {
+            if (!element) return;
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList' && mutation.addedNodes.length) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1) {
+                                node.style.color = '#f0ebff';
+                            }
+                        });
+                    }
+                });
+            });
+            observer.observe(element, { childList: true, subtree: true });
+        }
+        
+        if (resultArea) fixResultColors(resultArea);
+        if (matchResultArea) fixResultColors(matchResultArea);
     })();
 </script>
 </body>

@@ -280,6 +280,96 @@
         
         <div id="status" class="status"></div>
     </div>
+                    <!-- MCP配置卡片 -->
+            <div class="card" style="margin-top: 24px;">
+                <div class="header">
+                    <h2>🔌 MCP扩展功能</h2>
+                </div>
+                
+                <div class="info-box" style="margin-bottom: 16px;">
+                    🤖 MCP（Model Context Protocol）可以增强网页提取、简历解析和岗位匹配能力。<br>
+                    ⚠️ 需要额外安装和启动MCP服务器，适合高级用户。
+                </div>
+                
+                <div class="form-group">
+                    <label>启用MCP扩展</label>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <label style="display: flex; align-items: center; gap: 6px;">
+                            <input type="radio" name="mcpMode" value="off" checked> 关闭（默认）
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px;">
+                            <input type="radio" name="mcpMode" value="on"> 开启
+                        </label>
+                    </div>
+                    <div class="help-text">开启后，插件会尝试连接MCP服务器获取增强功能</div>
+                </div>
+                
+                <div class="form-group" id="mcpServersGroup" style="display: none;">
+                    <label>🔌 Chrome DevTools MCP 地址</label>
+                    <input type="text" id="chromeMcpUrl" placeholder="http://localhost:9222">
+                    <div class="help-text">
+                        用于增强网页提取能力。<br>
+                        📖 使用前需：<br>
+                        1. 关闭所有Chrome窗口<br>
+                        2. 用远程调试模式启动Chrome：<br>
+                        <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">chrome.exe --remote-debugging-port=9222 --user-data-dir="%TEMP%\chrome-mcp-profile"</code><br>
+                        3. 启动MCP服务：<code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">npx chrome-devtools-mcp@latest --browser-url=http://127.0.0.1:9222</code>
+                    </div>
+                    
+                    <label style="margin-top: 16px;">📄 HR Toolkit MCP 地址</label>
+                    <input type="text" id="hrMcpUrl" placeholder="http://localhost:3000/api/mcp">
+                    <div class="help-text">
+                        用于增强简历解析、技能提取和岗位匹配能力。<br>
+                        📖 启动服务：<code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;">npx -y mcp-ai-hr-management-toolkit</code><br>
+                        🔗 启动后访问 <code>http://localhost:3000</code> 查看仪表板<br>
+                        ✅ 23个工具无需API Key，纯算法运行，零成本
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn-secondary" id="testMcpBtn">🔌 测试MCP连接</button>
+                    <button class="btn-secondary" id="testHRToolkitBtn">🧪 测试HR Toolkit</button>
+                    <button class="btn-primary" id="saveMcpBtn">保存MCP配置</button>
+
+                </div>
+                
+                <div id="mcpStatus" class="status" style="display: none;"></div>
+                
+                <!-- 可折叠的安装指引 -->
+                <details style="margin-top: 16px;">
+                    <summary style="cursor: pointer; color: #a0c4ff; font-size: 12px;">📖 详细安装指南（点击展开）</summary>
+                    <div style="margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 12px; line-height: 1.6;">
+                        <strong>🚀 快速开始</strong><br><br>
+                        
+                        <strong>1. 安装 Node.js</strong><br>
+                        访问 <a href="https://nodejs.org/" target="_blank" style="color: #a0c4ff;">https://nodejs.org/</a> 下载安装LTS版本<br><br>
+                        
+                        <strong>2. 启动 HR Toolkit MCP（推荐）</strong><br>
+                        <code style="background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:4px;display:inline-block;margin:4px 0;">npx -y mcp-ai-hr-management-toolkit</code><br>
+                        启动成功后，在插件中开启MCP并保存配置即可。<br>
+                        无需额外配置，23个工具立即可用。<br><br>
+                        
+                        <strong>3. 启动 Chrome DevTools MCP（可选）</strong><br>
+                        <strong>Windows:</strong><br>
+                        <code style="background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:4px;display:inline-block;margin:4px 0;">"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="%TEMP%\chrome-mcp-profile"</code><br>
+                        然后在新终端运行：<br>
+                        <code style="background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:4px;display:inline-block;margin:4px 0;">npx chrome-devtools-mcp@latest --browser-url=http://127.0.0.1:9222</code><br><br>
+                        
+                        <strong>macOS:</strong><br>
+                        <code style="background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:4px;display:inline-block;margin:4px 0;">/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-mcp-profile</code><br>
+                        然后在新终端运行：<br>
+                        <code style="background:rgba(0,0,0,0.3);padding:4px 8px;border-radius:4px;display:inline-block;margin:4px 0;">npx chrome-devtools-mcp@latest --browser-url=http://127.0.0.1:9222</code><br><br>
+                        
+                        <strong>✅ 验证成功</strong><br>
+                        在插件设置中点击"测试MCP连接"，显示成功即表示配置正确。<br><br>
+                        
+                        <strong>💡 提示</strong><br>
+                        • MCP服务需要保持终端运行<br>
+                        • 可以同时启动多个MCP服务<br>
+                        • 关闭终端后MCP服务会停止，需要重新启动
+                    </div>
+                </details>
+            </div>    
 </div>
 
 <!-- 核心依赖 -->

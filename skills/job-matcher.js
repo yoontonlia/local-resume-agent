@@ -1,12 +1,12 @@
 /**
- * 职位匹配技能模块
+ * 职位匹配技能模块 - 增强版
  * 功能：对比简历与招聘信息，分析匹配度，给出优化建议
- * 支持历史记录保存
+ * 支持 HR Toolkit MCP 纯算法匹配（零成本）
  */
 
 class JobMatcher {
     constructor() {
-        this.matchHistory = [];
+        this.matchHistory = [];  // 匹配历史
     }
 
     /**
@@ -34,10 +34,34 @@ class JobMatcher {
         }
 
         try {
-            const matchResult = await this._performMatch(resumeText, jobDescription);
+            let matchResult = '';
+            let usedMethod = 'AI';
+            
+            // ========== 优先使用 HR Toolkit 纯算法匹配（零成本） ==========
+            if (window.mcpClient && window.mcpClient.isMcpAvailable) {
+                console.log('🔌 尝试使用 HR Toolkit 纯算法匹配...');
+                try {
+                    const mcpMatch = await window.mcpClient.computeMatchScore(resumeText, jobDescription);
+                    if (mcpMatch && mcpMatch.similarity) {
+                        console.log('✅ HR Toolkit 匹配成功，相似度:', mcpMatch.similarity);
+                        matchResult = this._formatMcpMatchResult(mcpMatch);
+                        usedMethod = 'HR Toolkit (纯算法)';
+                    }
+                } catch (mcpError) {
+                    console.warn('⚠️ HR Toolkit 匹配失败，降级使用 AI:', mcpError);
+                }
+            }
+            
+            // ========== 降级：使用 AI 分析 ==========
+            if (!matchResult) {
+                console.log('使用 AI 分析匹配...');
+                matchResult = await this._performMatch(resumeText, jobDescription);
+                usedMethod = 'AI';
+            }
+            // ==========================================================
             
             // 保存到历史记录
-            await this._saveToHistory(matchResult, jobDescription);
+            await this._saveToHistory(matchResult, jobDescription, usedMethod);
             
             return {
                 success: true,
@@ -56,7 +80,68 @@ class JobMatcher {
     }
 
     /**
-     * 执行匹配分析
+     * 格式化 HR Toolkit 匹配结果为友好格式
+     * @private
+     */
+    _formatMcpMatchResult(mcpMatch) {
+        const similarity = mcpMatch.similarity || 0;
+        const score = Math.round(similarity * 100);
+        
+        // 技能匹配详情
+        let skillsSection = '';
+        if (mcpMatch.skillMatch) {
+            const matched = mcpMatch.skillMatch.matched || [];
+            const missing = mcpMatch.skillMatch.missing || [];
+            
+            if (matched.length > 0) {
+                skillsSection += `### ✅ 匹配技能\n${matched.map(s => `- ${s}`).join('\n')}\n\n`;
+            }
+            if (missing.length > 0) {
+                skillsSection += `### ⚠️ 缺失技能\n${missing.map(s => `- ${s}`).join('\n')}\n\n`;
+            }
+        }
+        
+        // 经验匹配
+        let experienceSection = '';
+        if (mcpMatch.experienceMatch) {
+            experienceSection = `### 💼 经验匹配\n- 匹配度: ${Math.round((mcpMatch.experienceMatch.similarity || 0) * 100)}%\n\n`;
+        }
+        
+        // 推荐决策
+        let recommendation = '';
+        if (score >= 80) {
+            recommendation = '强烈推荐面试 - 候选人非常匹配';
+        } else if (score >= 65) {
+            recommendation = '推荐面试 - 候选人基本符合要求';
+        } else if (score >= 50) {
+            recommendation = '可考虑面试 - 需要进一步评估';
+        } else {
+            recommendation = '暂不推荐 - 匹配度较低';
+        }
+        
+        return `## 📊 匹配度分析报告
+
+**分析方式**: HR Toolkit 纯算法匹配（零成本）
+
+### 🎯 综合匹配度
+
+| 项目 | 结果 |
+|------|------|
+| 综合匹配度 | **${score}%** |
+| 推荐决策 | ${recommendation} |
+
+${skillsSection}${experienceSection}
+### 💡 补充说明
+
+此分析基于纯算法计算，不消耗AI Token。如需更详细的面试建议，可使用AI模式重新分析。
+
+---
+*报告由 HR Toolkit MCP 生成*
+`;
+    }
+
+    /**
+     * 执行AI匹配分析
      * @private
      */
     async _performMatch(resumeText, jobDescription) {
@@ -114,47 +199,38 @@ ${resumeText.substring(0, 6000)}
      * 保存匹配历史
      * @private
      */
-    async _saveToHistory(result, jobDescription) {
+    async _saveToHistory(result, jobDescription, usedMethod) {
         try {
-            console.log('[JobMatcher] 开始保存历史记录...');
-            
+            // 提取职位标题
             const jobTitle = this._extractJobTitle(jobDescription);
+            
+            // 提取匹配度分数
             const score = this._extractScore(result);
             
-            const newRecord = {
+            const record = {
                 id: Date.now(),
-                type: 'match',
+                timestamp: new Date().toISOString(),
+                localTime: new Date().toLocaleString(),
                 jobTitle: jobTitle,
                 score: score,
+                usedMethod: usedMethod,
                 resultPreview: result.substring(0, 300),
-                fullResult: result,
-                timestamp: new Date().toISOString(),
-                localTime: new Date().toLocaleString()
+                fullResult: result
             };
             
-            console.log('[JobMatcher] 新记录:', newRecord);
+            this.matchHistory.unshift(record);
             
-            // 获取现有历史
-            const storageResult = await chrome.storage.local.get(['jobMatchHistory']);
-            let history = storageResult.jobMatchHistory || [];
-            
-            // 添加新记录到开头
-            history.unshift(newRecord);
-            
-            // 只保留最近50条
-            if (history.length > 50) {
-                history = history.slice(0, 50);
+            // 保留最近20条
+            if (this.matchHistory.length > 20) {
+                this.matchHistory = this.matchHistory.slice(0, 20);
             }
             
-            // 保存
-            await chrome.storage.local.set({ jobMatchHistory: history });
-            console.log('[JobMatcher] 保存成功，当前共', history.length, '条记录');
+            // 保存到 chrome.storage.local
+            await chrome.storage.local.set({ jobMatchHistory: this.matchHistory });
+            console.log(`岗位匹配历史已保存 (${usedMethod}):`, jobTitle, '匹配度:', score + '%');
             
-            // 更新内存中的历史
-            this.matchHistory = history;
-            
-        } catch (error) {
-            console.error('[JobMatcher] 保存历史失败:', error);
+        } catch (e) {
+            console.warn('保存匹配历史失败:', e);
         }
     }
 
@@ -172,17 +248,8 @@ ${resumeText.substring(0, 6000)}
             if (trimmed.length > 5 && trimmed.length < 50 && 
                 (trimmed.includes('职位') || trimmed.includes('岗位') || 
                  trimmed.includes('招聘') || trimmed.includes('诚聘') ||
-                 trimmed.includes('名称') || trimmed.includes('：'))) {
-                // 清理常见前缀
-                let title = trimmed;
-                const prefixes = ['职位名称：', '岗位名称：', '招聘职位：', '职位：', '岗位：'];
-                for (const prefix of prefixes) {
-                    if (title.startsWith(prefix)) {
-                        title = title.substring(prefix.length);
-                        break;
-                    }
-                }
-                return title.substring(0, 50);
+                 trimmed.includes('名称'))) {
+                return trimmed.substring(0, 50);
             }
         }
         
@@ -241,13 +308,13 @@ ${resumeText.substring(0, 6000)}
             const result = await chrome.storage.local.get(['jobMatchHistory']);
             if (result.jobMatchHistory && Array.isArray(result.jobMatchHistory)) {
                 this.matchHistory = result.jobMatchHistory;
-                console.log(`[JobMatcher] 加载了 ${this.matchHistory.length} 条岗位匹配历史`);
+                console.log(`加载了 ${this.matchHistory.length} 条岗位匹配历史`);
             } else {
                 this.matchHistory = [];
-                console.log('[JobMatcher] 暂无岗位匹配历史');
+                console.log('暂无岗位匹配历史');
             }
         } catch (error) {
-            console.error('[JobMatcher] 加载历史失败:', error);
+            console.error('加载匹配历史失败:', error);
             this.matchHistory = [];
         }
     }
