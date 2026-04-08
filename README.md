@@ -2,7 +2,7 @@
   <img src="icons/icon128.png" width="120" alt="Logo">
   <h1>📄 本地简历智能分析助手</h1>
   <p><strong>Local Resume AI Agent - Chrome Extension</strong></p>
-  <p>基于Chrome扩展的本地AI简历分析工具 | 隐私优先 | 支持DeepSeek/OpenAI | 可自定义Skill模板</p>
+  <p>基于Chrome扩展的本地AI简历分析工具 | 隐私优先 | 支持DeepSeek/OpenAI | 可自定义Skill模板 | 支持MCP扩展</p>
 
 
   <p>
@@ -13,7 +13,7 @@
     <a href="#-使用指南">使用指南</a> •
     <a href="#-配置说明">配置说明</a> •
     <a href="#-自定义模板">自定义模板</a> •
-    <a href="#-开源协议">开源协议</a>
+   <a href="#-mcp扩展功能">MCP扩展功能</a>
   </p>
 
 
@@ -22,6 +22,7 @@
     <img src="https://img.shields.io/badge/Chrome-Extension-green">
     <img src="https://img.shields.io/badge/license-MIT-green">
     <img src="https://img.shields.io/badge/AI-DeepSeek-orange">
+    <img src="https://img.shields.io/badge/MCP-Supported-purple">
   </p>
 
 </div>
@@ -48,6 +49,8 @@
 | 🎨 **自定义模板**     | 用户可创建自己的分析模板，适应不同行业/岗位 |
 | 📦 **Skill导入/导出** | 支持从文件或URL导入Skill，兼容OpenClaw规范  |
 | 🔒 **隐私保护**       | 所有数据在本地处理，不上传任何服务器        |
+| 📑 **PDF导出** | AI重写简历后，一键导出优化版PDF |
+| 🔌 **MCP扩展** | 支持Chrome DevTools MCP和HR Toolkit MCP增强 |
 | 🌐 **多模型支持**     | 支持DeepSeek、OpenAI及兼容接口              |
 | 📜 **历史记录**       | 保存所有分析记录，支持导出Markdown/TXT      |
 
@@ -97,7 +100,7 @@ cd local-resume-agent
 - 上传PDF简历或手动粘贴内容
 - 选择分析模板
 - 点击开始分析
-
+- 分析完成后可导出优化版PDF
 ### 安装方式二：Chrome应用商店（待发布）
 
 > 正在审核中，敬请期待...
@@ -109,8 +112,12 @@ local-resume-agent/
 ├── lib/                        # 核心库
 │   ├── llm-service.js          # 大模型服务
 │   ├── ai-core.js              # AI核心
+│   ├── mcp-client.js           # MCP客户端 ⭐新增
 │   ├── template-manager.js     # 模板管理器
 │   ├── skill-loader.js         # Skill加载器
+│   ├── resume-template.js      # 简历模板系统 ⭐新增
+│   ├── resume-rewriter.js      # AI重写简历 ⭐新增
+│   ├── pdf-exporter.js         # PDF导出模块 ⭐新增
 │   ├── pdf-reader.js           # PDF读取
 │   ├── web-extractor.js        # 网页提取
 │   ├── report-exporter.js      # 报告导出
@@ -134,7 +141,49 @@ local-resume-agent/
 ├── dashboard.html/js           # 数据看板
 ├── background.js               # 后台服务
 └── manifest.json               # 插件配置
+## 🔌 MCP扩展功能
 
+### 支持的MCP服务器
+
+| MCP服务器               | 功能                         | 状态   |
+| :---------------------- | :--------------------------- | :----- |
+| **HR Toolkit MCP**      | 简历解析、技能提取、岗位匹配 | ✅ 支持 |
+| **Chrome DevTools MCP** | 网页提取、浏览器自动化       | ✅ 支持 |
+
+### MCP配置步骤
+
+1. **安装Node.js**（如未安装）
+   - 访问 https://nodejs.org/ 下载安装
+2. **启动HR Toolkit MCP**
+
+```bash
+npx -y mcp-ai-hr-management-toolkit
+```
+3. **启动Chrome DevTools MCP**（可选）
+   - 先以远程调试模式启动Chrome：
+
+```bash
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="%TEMP%\chrome-mcp-profile"
+```
+- 再启动MCP服务：
+
+```bash
+npx chrome-devtools-mcp@latest --browser-url=http://127.0.0.1:9222
+```
+
+4. **在插件设置中开启MCP**
+   - 打开插件 → 设置 → MCP扩展功能
+   - 开启MCP扩展
+   - 填写服务器地址
+   - 保存配置
+
+### MCP增强能力
+
+| 功能     | 基础模式     | MCP增强模式          |
+| :------- | :----------- | :------------------- |
+| 网页提取 | 支持有限网站 | 可提取任何网站       |
+| 简历解析 | 基础文本提取 | 结构化+13类技能      |
+| 岗位匹配 | 依赖AI调用   | 纯算法匹配（零成本） |
 ## 🛠️ 技术架构
 
 ### 核心技术栈
@@ -145,12 +194,15 @@ local-resume-agent/
 | 原生 JavaScript              | 无框架依赖，轻量高效 |
 | DeepSeek/OpenAI API          | 大语言模型接口       |
 | PDF.js                       | PDF文件解析          |
+|MCP (Model Context Protocol) | 可选增强服务
 
 ### 架构特点
 
 - **模块化设计**：各功能独立，易于扩展和维护
 - **模板系统**：用户可自定义分析模板，适应不同场景
 - **Skill机制**：支持导入/导出Skill，兼容OpenClaw规范
+- **PDF导出**：AI重写后一键导出优化版简历
+- **MCP集成**：可选增强，提供更专业的数据处理能力
 - **本地优先**：所有数据存储在用户本地，不上传服务器
 
 ### 数据流向
@@ -168,7 +220,7 @@ local-resume-agent/
 3. 点击"开始分析简历"按钮
 4. 等待AI分析完成，查看结果
 5. 可导出分析报告（Markdown/TXT格式）
-
+6. 可导出分析报告或优化版PDF
 **支持的分析深度：**
 
 - 快速分析：提取核心技能和综合评分
@@ -242,6 +294,11 @@ local-resume-agent/
 3. 点击记录查看详情
 4. 可删除单条记录或清空全部
 5. 可导出历史记录为JSON或Markdown
+
+### 7. PDF导出
+1. 分析完成后点击"导出优化版简历"
+2. AI自动重写简历内容
+3. 保持原格式，一键导出PDF
 
 ------
 
@@ -329,6 +386,32 @@ tags: 技术, 研发, 代码
 | 管理岗招聘 | 管理岗评估     | 团队规模、决策能力、人才培养   |
 | 海外求职   | 海外求职分析   | 英语能力、国际化经验、签证适配 |
 | HR筛选     | 快速筛选       | 硬性条件、关键亮点、面试建议   |
+
+------
+## 📝 更新日志
+
+### v1.2.0 (2024-04-06)
+
+- ✨ 新增PDF导出功能（AI重写简历后导出优化版）
+- ✨ 新增MCP扩展支持（HR Toolkit + Chrome DevTools）
+- ✨ 新增简历模板系统（专业/现代/创意三种风格）
+- ✨ 新增AI重写简历模块
+- 🐛 修复多个页面的返回按钮问题
+- 🎨 优化简历模板样式和打印效果
+
+### v1.1.0 (2024-04-05)
+
+- ✨ 新增Skill导入/导出功能
+- ✨ 新增从URL导入Skill
+- ✨ 新增模板管理器
+- 🎨 优化全屏页面样式
+
+### v1.0.0 (2024-04-04)
+
+- 🎉 首次发布
+- ✨ 简历分析、岗位匹配、批量分析
+- ✨ 历史记录、数据看板
+- ✨ 支持DeepSeek/OpenAI
 
 ------
 
