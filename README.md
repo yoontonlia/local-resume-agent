@@ -2,7 +2,7 @@
   <img src="icons/icon128.png" width="120" alt="Logo">
   <h1>📄 本地简历智能分析助手</h1>
   <p><strong>Local Resume AI Agent - Chrome Extension</strong></p>
-  <p>基于Chrome扩展的本地AI简历分析工具 | 隐私优先 | 支持DeepSeek/OpenAI | 可自定义Skill模板 | 支持MCP扩展</p>
+  <p>基于Chrome扩展的本地AI简历分析工具 | 隐私优先 | 支持DeepSeek/OpenAI | 可自定义Skill模板 | 支持MCP扩展 | 智能对话 | 自主规划</p>
 
 
   <p>
@@ -18,11 +18,12 @@
 
 
   <p>
-    <img src="https://img.shields.io/badge/version-1.0.0-blue">
+    <img src="https://img.shields.io/badge/version-1.3.0-blue">
     <img src="https://img.shields.io/badge/Chrome-Extension-green">
     <img src="https://img.shields.io/badge/license-MIT-green">
     <img src="https://img.shields.io/badge/AI-DeepSeek-orange">
     <img src="https://img.shields.io/badge/MCP-Supported-purple">
+    <img src="https://img.shields.io/badge/Agent-ReAct-purple">
   </p>
 
 </div>
@@ -110,14 +111,17 @@ cd local-resume-agent
 local-resume-agent/
 ├── icons/                      # 图标文件
 ├── lib/                        # 核心库
+│ ├── agent-orchestrator.js # AI智能体编排器
+│ ├── agent-memory.js # 记忆系统
+│ ├── agent-planner.js # 任务规划器
 │   ├── llm-service.js          # 大模型服务
 │   ├── ai-core.js              # AI核心
-│   ├── mcp-client.js           # MCP客户端 ⭐新增
+│   ├── mcp-client.js           # MCP客户端
 │   ├── template-manager.js     # 模板管理器
 │   ├── skill-loader.js         # Skill加载器
-│   ├── resume-template.js      # 简历模板系统 ⭐新增
-│   ├── resume-rewriter.js      # AI重写简历 ⭐新增
-│   ├── pdf-exporter.js         # PDF导出模块 ⭐新增
+│   ├── resume-template.js      # 简历模板系统
+│   ├── resume-rewriter.js      # AI重写简历
+│   ├── pdf-exporter.js         # PDF导出模块
 │   ├── pdf-reader.js           # PDF读取
 │   ├── web-extractor.js        # 网页提取
 │   ├── report-exporter.js      # 报告导出
@@ -388,7 +392,128 @@ tags: 技术, 研发, 代码
 | HR筛选     | 快速筛选       | 硬性条件、关键亮点、面试建议   |
 
 ------
+## 🎉 最新更新：AI智能职业顾问 v3.0
+
+本次更新将插件从“功能型工具”升级为“对话式智能顾问”，实现了质的飞跃。
+
+### ✨ 核心新功能
+
+#### 1. 🤖 智能对话式交互
+
+不再需要学习复杂的功能按钮，直接说出你的需求：
+
+| 你说                       | 它做                       |
+| -------------------------- | -------------------------- |
+| “分析我的简历”             | 自动解析并生成专业分析报告 |
+| “结合这个岗位优化一下”     | 基于JD针对性优化简历       |
+| “再优化一次，突出管理经验” | 生成不同方向的优化建议     |
+| “帮我匹配这个职位”         | 计算匹配度，分析差距       |
+
+#### 2. 🔄 多轮对话与上下文记忆
+
+- AI记住你说过的每一句话
+- 理解当前任务进度
+- 支持追问、修改、重新规划
+
+#### 3. 🎯 智能优化系统
+
+- **首次优化**：基础简历优化建议
+- **多次优化**：可连续生成不同版本
+- **方向指定**：说出具体优化方向（如“突出技术能力”）
+- **结合岗位**：根据匹配结果针对性优化
+
+#### 4. 🧠 记忆系统
+
+- **短期记忆**：记住当前对话内容
+- **长期记忆**：跨会话记住你的偏好和关键信息
+- **自动提取**：智能识别并保存重要信息
+
+---
+
+## 🏗️ 技术架构
+
+### ReAct 智能体架构
+
+本项目采用业界主流的 **ReAct (Reasoning + Acting)** 架构
+
+---
+
+## 📖 使用指南
+
+### 快速开始
+
+1. **安装插件**（开发者模式加载）
+2. **配置API Key**（支持DeepSeek/OpenAI）
+3. **上传简历**（PDF格式）
+4. **点击开始分析**（需要第一次分析，才能使用智能顾问，要不就会一直提醒没有上传文件）
+5. **点击“🤖 智能顾问”** 开始对话
+
+### 对话示例
+
+**场景一：简历分析**
+
+用户：帮我分析一下这份简历
+AI：📊 正在分析简历...
+AI：✅ 简历分析完成！
+
+📋 使用模板：深度分析
+
+## 📊 核心技能矩阵
+
+- JavaScript/TypeScript：5年经验
+- React/Vue：4年经验
+
+**场景二：岗位匹配与优化**
+
+用户：我想匹配这个岗位
+AI：请粘贴职位描述...
+
+用户：[粘贴JD内容]
+AI：🎯 正在进行岗位匹配分析...
+AI：✅ 匹配度：78%，建议优化技能描述部分
+
+用户：结合这个岗位优化我的简历
+AI：✏️ 正在生成优化建议（结合岗位匹配结果）...
+AI：✅ 第1次优化建议已生成！
+
+**场景三：多次优化**
+
+用户：再优化一次，突出管理经验
+AI：✏️ 正在生成第2次优化建议...
+AI：✅ 第2次优化建议已生成（突出管理经验）！
+
+### 支持的指令
+
+| 类别     | 指令示例                           |
+| -------- | ---------------------------------- |
+| 分析     | “分析简历”、“帮我看看这份简历”     |
+| 匹配     | “匹配这个岗位”、“对比JD”           |
+| 优化     | “优化简历”、“帮我改一下”           |
+| 定向优化 | “突出管理经验”、“针对技术岗位优化” |
+| 结合匹配 | “结合岗位匹配优化”、“根据JD优化”   |
+| 多次优化 | “再次优化”、“换个角度优化”         |
+| 模板     | “有哪些模板”、“使用快速分析”       |
+| 报告     | “生成报告”、“完成”                 |
+
+------
+
 ## 📝 更新日志
+### v1.3.0 (2025-04-08) - AI智能顾问版
+
+**新增**
+
+- 🤖 AI智能职业顾问模块
+- 🔄 多轮对话与上下文记忆
+- 🎯 智能优化系统（多次优化、方向指定、结合岗位）
+- 🧠 记忆系统（短期+长期记忆）
+- 📋 任务规划器
+- 🎨 增强的意图识别
+
+**优化**
+
+- 对话式交互体验
+- 状态管理和错误处理
+- 调试日志输出
 
 ### v1.2.0 (2024-04-06)
 
