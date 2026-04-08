@@ -450,7 +450,11 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             // 保存简历文本供职位匹配使用
             currentResumeText = resumeText;
-            
+            // ========== 新增：暴露到全局，供智能顾问使用 ==========
+                window.currentResumeText = resumeText;
+                window.currentFileName = currentFile ? currentFile.name : '手动输入';
+                console.log('[全局] 简历数据已同步，文件名:', window.currentFileName);
+                // ==================================================
             // AI分析 - 使用选中的模板
             console.log('开始AI分析，使用模板:', selectedTemplateId);
             const analysisResult = await window.resumeAnalyzer.analyze(resumeText, selectedTemplateId);
@@ -686,7 +690,95 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         });
     }
+    // ========== 智能顾问模式 ==========
+    const startAdvisorBtn = document.getElementById('startAdvisorBtn');
+    const advisorChatArea = document.getElementById('advisorChatArea');
+    const advisorMessages = document.getElementById('advisorMessages');
+    const advisorInput = document.getElementById('advisorInput');
+    const advisorSendBtn = document.getElementById('advisorSendBtn');
     
+    let isAdvisorMode = false;
+    
+    function addAdvisorMessage(role, content) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `advisor-message ${role}`;
+        messageDiv.style.cssText = `
+            margin-bottom: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 85%;
+            ${role === 'user' ? 
+                'background: #667eea; margin-left: auto;' : 
+                'background: rgba(255,255,255,0.1); margin-right: auto;'
+            }
+        `;
+        messageDiv.innerHTML = `<div style="font-size: 12px; opacity: 0.7; margin-bottom: 4px;">${role === 'user' ? '您' : 'AI顾问'}</div>${content.replace(/\n/g, '<br>')}`;
+        advisorMessages.appendChild(messageDiv);
+        advisorMessages.scrollTop = advisorMessages.scrollHeight;
+    }
+    
+    if (startAdvisorBtn) {
+        startAdvisorBtn.addEventListener('click', async () => {
+            if (!window.agentOrchestrator) {
+                alert('AI顾问模块未加载，请刷新页面重试');
+                return;
+            }
+            
+            startAdvisorBtn.style.display = 'none';
+            advisorChatArea.style.display = 'block';
+            isAdvisorMode = true;
+            
+            // 清空旧消息
+            advisorMessages.innerHTML = '';
+            
+            // 获取用户目标
+            const goal = prompt('请告诉我您今天想完成什么目标？\n\n例如：\n- 分析我的简历\n- 帮我匹配岗位\n- 生成职业发展报告', '分析我的简历');
+            
+            if (!goal) {
+                startAdvisorBtn.style.display = 'block';
+                advisorChatArea.style.display = 'none';
+                return;
+            }
+            
+            addAdvisorMessage('system', `🎯 目标：${goal}\n\n正在启动AI顾问...`);
+            
+            const response = await window.agentOrchestrator.startSession(goal);
+            addAdvisorMessage('assistant', response);
+        });
+    }
+    
+    if (advisorSendBtn && advisorInput) {
+        advisorSendBtn.addEventListener('click', async () => {
+            const message = advisorInput.value.trim();
+            if (!message || !isAdvisorMode) return;
+            
+            addAdvisorMessage('user', message);
+            advisorInput.value = '';
+            
+            // 显示思考状态
+            const thinkingDiv = document.createElement('div');
+            thinkingDiv.className = 'advisor-message assistant';
+            thinkingDiv.style.cssText = 'background: rgba(255,255,255,0.1); padding: 10px 14px; border-radius: 12px; margin-bottom: 12px; width: fit-content;';
+            thinkingDiv.innerHTML = '<span style="opacity: 0.7;">🤔 AI正在思考...</span>';
+            advisorMessages.appendChild(thinkingDiv);
+            advisorMessages.scrollTop = advisorMessages.scrollHeight;
+            
+            try {
+                const response = await window.agentOrchestrator.processInput(message);
+                thinkingDiv.remove();
+                addAdvisorMessage('assistant', response);
+            } catch (error) {
+                thinkingDiv.remove();
+                addAdvisorMessage('assistant', `抱歉，处理出错了：${error.message}`);
+            }
+        });
+        
+        advisorInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                advisorSendBtn.click();
+            }
+        });
+    }
     // 初始检查
     checkAndEnableAnalyzeBtn();
     console.log('界面初始化完成');

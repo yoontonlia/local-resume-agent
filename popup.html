@@ -650,6 +650,26 @@
             
             <div id="matchResultArea" class="result-area" style="margin-top: 14px; display: none;"></div>
         </div>
+        <!-- 智能顾问模式 -->
+        <div class="advisor-section" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <span style="font-size: 16px;">🤖</span>
+                <span style="font-weight: 600; color: rgba(255,255,255,0.9);">AI智能顾问</span>
+                <span style="font-size: 11px; color: rgba(255,255,255,0.5);">多轮对话 · 自主分析 · 生成报告</span>
+            </div>
+            
+            <div id="advisorChatArea" style="display: none; background: rgba(0,0,0,0.3); border-radius: 16px; margin-bottom: 12px; overflow: hidden;">
+                <div id="advisorMessages" style="height: 300px; overflow-y: auto; padding: 16px;">
+                    <div class="advisor-message system">💡 点击下方按钮开始智能顾问对话</div>
+                </div>
+                <div style="display: flex; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <input type="text" id="advisorInput" placeholder="输入您的回答..." style="flex: 1; background: rgba(255,255,255,0.1); border: none; padding: 12px; color: white; outline: none;">
+                    <button id="advisorSendBtn" style="padding: 12px 20px; background: #667eea; border: none; color: white; cursor: pointer;">发送</button>
+                </div>
+            </div>
+            
+            <button id="startAdvisorBtn" class="btn-primary" style="background: linear-gradient(135deg, #f093fb, #f5576c);">🤖 开始智能顾问对话</button>
+        </div>
     </div>
     
     <div class="footer">
@@ -657,31 +677,39 @@
     </div>
 </div>
 
-    <!-- 核心库：必须先加载 -->
-    <script src="lib/llm-service.js"></script>
-    <script src="lib/ai-core.js"></script>
-    <script src="lib/mcp-client.js"></script>  <!-- MCP客户端必须在 popup.js 之前 -->
-    <script src="lib/template-manager.js"></script>
-    <script src="lib/skill-loader.js"></script>
-    <script src="lib/resume-template.js"></script>
-    <script src="lib/resume-rewriter.js"></script>
-    <script src="lib/pdf-exporter.js"></script>
-    <script src="lib/pdf-reader.js"></script>
-    <script src="lib/web-extractor.js"></script>
-    <script src="lib/report-exporter.js"></script>
-    <script src="lib/history-manager.js"></script>
-    <script src="lib/batch-analyzer.js"></script>
-    <script src="lib/report-comparer.js"></script>
-    <script src="lib/resume-optimizer.js"></script>
-    <script src="lib/job-matcher-enhanced.js"></script>
-    
-    
-    <!-- 技能模块 -->
-    <script src="skills/resume-analyzer.js"></script>
-    <script src="skills/job-matcher.js"></script>
-    
-    <!-- 主逻辑（最后加载） -->
-    <script src="popup.js"></script>
+    <!-- ========== 1. 首先加载核心库 ========== -->
+<script src="lib/llm-service.js"></script>
+<script src="lib/ai-core.js"></script>
+
+<!-- ========== 2. 加载记忆和规划模块（编排器的依赖） ========== -->
+<script src="lib/agent-memory.js"></script>
+<script src="lib/agent-planner.js"></script>
+
+<!-- ========== 3. 加载技能模块（编排器调用） ========== -->
+<script src="skills/resume-analyzer.js"></script>
+<script src="skills/job-matcher.js"></script>
+
+<!-- ========== 4. 加载工具模块 ========== -->
+<script src="lib/template-manager.js"></script>
+<script src="lib/skill-loader.js"></script>
+<script src="lib/resume-template.js"></script>
+<script src="lib/resume-rewriter.js"></script>
+<script src="lib/pdf-exporter.js"></script>
+<script src="lib/pdf-reader.js"></script>
+<script src="lib/web-extractor.js"></script>
+<script src="lib/report-exporter.js"></script>
+<script src="lib/history-manager.js"></script>
+<script src="lib/batch-analyzer.js"></script>
+<script src="lib/report-comparer.js"></script>
+<script src="lib/resume-optimizer.js"></script>
+<script src="lib/job-matcher-enhanced.js"></script>
+<script src="lib/mcp-client.js"></script>
+
+<!-- ========== 5. 最后加载编排器（依赖上述所有模块） ========== -->
+<script src="lib/agent-orchestrator.js"></script>
+
+<!-- ========== 6. 主逻辑最后加载 ========== -->
+<script src="popup.js"></script>
 
 <!-- 补充内联增强确保样式完美适配 -->
 <script>
