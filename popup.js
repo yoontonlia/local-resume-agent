@@ -696,6 +696,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const advisorMessages = document.getElementById('advisorMessages');
     const advisorInput = document.getElementById('advisorInput');
     const advisorSendBtn = document.getElementById('advisorSendBtn');
+    const advisorHelpBtn = document.getElementById('advisorHelpBtn');  // 新增
     
     let isAdvisorMode = false;
     
@@ -716,7 +717,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         advisorMessages.appendChild(messageDiv);
         advisorMessages.scrollTop = advisorMessages.scrollHeight;
     }
-    
+    // ========== 新增：帮助按钮事件 ==========
+    if (advisorHelpBtn) {
+        advisorHelpBtn.addEventListener('click', () => {
+            if (!window.agentOrchestrator) {
+                addAdvisorMessage('assistant', '❌ AI顾问模块未加载，请刷新页面重试');
+                return;
+            }
+            const helpMessage = window.agentOrchestrator._getFullHelpMessage();
+            addAdvisorMessage('assistant', helpMessage);
+        });
+    }
+    // ===================================
     if (startAdvisorBtn) {
         startAdvisorBtn.addEventListener('click', async () => {
             if (!window.agentOrchestrator) {
