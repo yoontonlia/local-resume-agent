@@ -18,7 +18,7 @@
 
 
   <p>
-    <img src="https://img.shields.io/badge/version-1.3.0-blue">
+    <img src="https://img.shields.io/badge/version-1.3.1-blue">
     <img src="https://img.shields.io/badge/Chrome-Extension-green">
     <img src="https://img.shields.io/badge/license-MIT-green">
     <img src="https://img.shields.io/badge/AI-DeepSeek-orange">
@@ -498,6 +498,19 @@ AI：✅ 第2次优化建议已生成（突出管理经验）！
 ------
 
 ## 📝 更新日志
+### v1.3.1 (2025-04-09) - 岗位匹配与优化建议修复
+
+**🐛 修复**
+- 岗位匹配流程：粘贴JD后说"匹配"现在正常触发分析
+- 重新匹配支持：更换新JD后自动清空旧结果，支持重新匹配
+- 优化建议结合岗位：优化建议现在会结合岗位匹配结果输出针对性内容
+- 长内容折叠：超过800字符自动添加展开/折叠按钮
+- JD自动识别：粘贴长文本自动识别为职位描述
+
+**✨ 新增**
+- 支持 `/help`、`/status`、`/clear` 命令
+- 帮助手册优化，提供完整使用指引
+
 ### v1.3.0 (2025-04-08) - AI智能顾问版
 
 **新增**
